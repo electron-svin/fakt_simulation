@@ -54,9 +54,6 @@ class Rocket:
 
     def __init__(self, screen):
         """Target class constructor
-
-        :param screen: pygame screen
-        :param gun: tank's gun
         """
         self.screen = screen
         self.shell_mass = 1000
@@ -67,7 +64,7 @@ class Rocket:
         self.vx = 0
         self.vy = 0
         self.x = 0
-        self.y = 6400*10**3
+        self.y = 6400000
         self.r = 30
         self.color = BLUE
         self.left_key = pygame.K_a
@@ -88,7 +85,6 @@ class Rocket:
         """Возвращает массив из x- и y- составляющих силы реактивной тяги ракеты"""
         force_x = - self.mu * self.u * math.sin(self.angle)  # при отклонении влево sin>0 -> force_x<0
         force_y = self.mu * self.u * math.cos(self.angle)  # без отклонения cos>0 -> force_y>0 (ось y инвертирована)
-        self.fuel_mass
         return [force_x, force_y]
 
     def calculate_acceleration(self, force_x, force_y):
@@ -99,8 +95,21 @@ class Rocket:
     def waste_fuel(self):
         self.fuel_mass -= self.mu / FPS
 
-    def draw(self, scale_factor):
+    def draw(self, scale_factor): #FIXME: я не понимаю почему он не рисует этот трижды жёваный полигон
+        h = 100
+        w = 20
+        x1 = int(self.x + (- h * math.sin(self.angle) + w * math.cos(self.angle)) * scale_factor)
+        y1 = int(self.y + (+ h * math.sin(self.angle) + w * math.cos(self.angle)) * scale_factor)
+        x2 = int(self.x + (- h * math.sin(self.angle) - w * math.cos(self.angle)) * scale_factor)
+        y2 = int(self.y + (+ h * math.sin(self.angle) - w * math.cos(self.angle)) * scale_factor)
+        x3 = int(self.x + (+ h * math.sin(self.angle) - w * math.cos(self.angle)) * scale_factor)
+        y3 = int(self.y + (- h * math.sin(self.angle) - w * math.cos(self.angle)) * scale_factor)
+        x4 = int(self.x + (+ h * math.sin(self.angle) + w * math.cos(self.angle)) * scale_factor)
+        y4 = int(self.y + (- h * math.sin(self.angle) + w * math.cos(self.angle)) * scale_factor)
         pygame.draw.circle(self.screen, self.color, (720, 360), self.r * scale_factor)
+        pygame.draw.polygon(self.screen, self.color, [[x1, y1], [x2, y2], [x3, y3], [x4, y4]])
+        print(*[[x1, y1], [x2, y2], [x3, y3], [x4, y4]])
+
         pygame.draw.circle(self.screen, self.color, (720, 360), 1)  # чтобы при удалении ракета не пропадала с экрана
 
     def move(self):
