@@ -42,7 +42,6 @@ class Planet:
                             360 + (rocket.y - self.y) * self.scale_factor),
                            self.r * self.scale_factor)
 
-
     def scale(self, keys):
         if keys[self.up]:
             self.scale_factor *= 1.05
@@ -57,10 +56,11 @@ class Rocket:
         """
         self.screen = screen
         self.shell_mass = 1000
-        self.fuel_mass = 5000
+        self.max_fuel_mass = 5000
+        self.fuel_mass = self.max_fuel_mass
         self.engine_on = False
-        self.mu = 1
-        self.u = 4000000
+        self.mu = 1000
+        self.u = 4000
         self.angle = 0  # угол с вертикалью, положительен обход против часовой стрелки
         self.vx = 0
         self.vy = 0
@@ -91,8 +91,20 @@ class Rocket:
         return [force_x, force_y]
 
     def waste_fuel(self):
+        """Тратит часть топлива каждый кадр, уменьшая fuel mass"""
         if self.engine_on:
             self.fuel_mass -= self.mu / FPS
+
+    def draw_fuel_tank(self, scale_factor):
+        """Визуализирует бак прямоугольником в правом нижнем углу"""
+        height = 200
+        width = 40
+        color = BLACK
+        if self.fuel_mass > 0:
+            color = (200 * (1 - self.fuel_mass / self.max_fuel_mass), 200 * (self.fuel_mass / self.max_fuel_mass), 0)
+        remainder = height / self.max_fuel_mass * self.fuel_mass
+        pygame.draw.rect(self.screen, BLACK, (WIDTH - width - 10, HEIGHT - height - 10, width, height))
+        pygame.draw.rect(self.screen, color, (WIDTH - width - 10, HEIGHT - remainder - 10, width, remainder))
 
     def calculate_acceleration(self, force_x, force_y):
         """Изменяет x- и y- составляющие скорости ракеты за 1 кадр в соответствии с её полным ускорением"""
@@ -122,15 +134,17 @@ class Rocket:
         self.y += self.vy
 
     def switch_engine(self, keys):
+        """Включает/выключает двигатель при разовом нажатии на W/S"""
         if keys[self.up_key]:
             self.engine_on = True
         elif keys[self.down_key]:
             self.engine_on = False
     def turn(self, keys):
+        """Включает/выключает двигатель при разовом нажатии на W/S"""
         if keys[self.left_key]:
-            self.angle += 0.1
+            self.angle += 1 / FPS
         if keys[self.right_key]:
-            self.angle -= 0.1
+            self.angle -= 1 / FPS
 
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -164,6 +178,7 @@ while not finished:
     screen.fill(WHITE)
     planet.draw(rocket)
     rocket.draw(planet.scale_factor)
+    rocket.draw_fuel_tank(planet.scale_factor)
     planet.scale(pygame.key.get_pressed())
 
 pygame.quit()
