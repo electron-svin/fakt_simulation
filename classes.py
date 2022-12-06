@@ -55,19 +55,25 @@ class Rocket:
         """Target class constructor
         """
         self.screen = screen
+        self.height = 100
+        self.width = 20
+        self.coord_cm = 0  # растояние вверх от центра ракеты до центра масс
+        self.moment_of_inertia = 100000  # момент инерции относительно центра масс
+        self.nozzle_angle = 0  # угол поворота сопла
         self.shell_mass = 1000
-        self.max_fuel_mass = 5000
+        self.max_fuel_mass = 500
         self.fuel_mass = self.max_fuel_mass
         self.engine_on = False
-        self.mu = 1000
+        self.mu = 10
         self.u = 4000
-        self.angle = 0  # угол с вертикалью, положительен обход против часовой стрелки
+        self.angle = 0  # угол с вертикалью, положителен обход против часовой стрелки
         self.vx = 0
         self.vy = 0
+        self.omega = 0 # угловая скорость вращения против часовой стрелки
         self.x = 0
         self.y = 6400000
         self.r = 30
-        self.color = BLUE
+        self.color = GREY
         self.left_key = pygame.K_a
         self.right_key = pygame.K_d
         self.up_key = pygame.K_w
@@ -91,9 +97,12 @@ class Rocket:
         return [force_x, force_y]
 
     def waste_fuel(self):
-        """Тратит часть топлива каждый кадр, уменьшая fuel mass"""
+        """Тратит часть топлива каждый кадр, уменьшая fuel mass, выключает двигатель при отсутствии топлива"""
         if self.engine_on:
             self.fuel_mass -= self.mu / FPS
+        if self.fuel_mass <= 0:
+            self.engine_on = False
+
 
     def draw_fuel_tank(self, scale_factor):
         """Визуализирует бак прямоугольником в правом нижнем углу"""
@@ -111,18 +120,27 @@ class Rocket:
         self.vx += force_x / (self.shell_mass + self.fuel_mass) / FPS
         self.vy += force_y / (self.shell_mass + self.fuel_mass) / FPS
 
-    def draw(self, scale_factor): #FIXME: я не понимаю почему он не рисует этот трижды жёваный полигон
-        h = 100
-        w = 20
-        x1 = int(self.x + (- h * math.sin(self.angle) + w * math.cos(self.angle)) * scale_factor)
-        y1 = int(self.y + (+ h * math.sin(self.angle) + w * math.cos(self.angle)) * scale_factor)
-        x2 = int(self.x + (- h * math.sin(self.angle) - w * math.cos(self.angle)) * scale_factor)
-        y2 = int(self.y + (+ h * math.sin(self.angle) - w * math.cos(self.angle)) * scale_factor)
-        x3 = int(self.x + (+ h * math.sin(self.angle) - w * math.cos(self.angle)) * scale_factor)
-        y3 = int(self.y + (- h * math.sin(self.angle) - w * math.cos(self.angle)) * scale_factor)
-        x4 = int(self.x + (+ h * math.sin(self.angle) + w * math.cos(self.angle)) * scale_factor)
-        y4 = int(self.y + (- h * math.sin(self.angle) + w * math.cos(self.angle)) * scale_factor)
-        pygame.draw.circle(self.screen, self.color, (720, 360), self.r * scale_factor)
+    def calculate_moment_of_inertia(self):
+        self.moment_of_inertia = (self.shell_mass + self.fuel_mass) * (self.height ** 2 / 4 + self.coord_cm ** 2) / 6
+
+    def calculate_angular_acceleration(self):
+        if self.engine_on:
+            moment_of_power = - self.mu * self.u * (self.height / 2 + self.coord_cm) * math.sin(self.nozzle_angle)
+            epsilon = moment_of_power / self.moment_of_inertia
+            self.omega += epsilon
+
+    def draw(self, scale_factor):
+        h = self.height / 2
+        w = self.width / 2
+        x1 = int(720 + (- h * math.sin(self.angle) + w * math.cos(self.angle)) * scale_factor)
+        y1 = int(360 - (+ h * math.cos(self.angle) + w * math.sin(self.angle)) * scale_factor)
+        x2 = int(720 + (- h * math.sin(self.angle) - w * math.cos(self.angle)) * scale_factor)
+        y2 = int(360 - (+ h * math.cos(self.angle) - w * math.sin(self.angle)) * scale_factor)
+        x3 = int(720 + (+ h * math.sin(self.angle) - w * math.cos(self.angle)) * scale_factor)
+        y3 = int(360 - (- h * math.cos(self.angle) - w * math.sin(self.angle)) * scale_factor)
+        x4 = int(720 + (+ h * math.sin(self.angle) + w * math.cos(self.angle)) * scale_factor)
+        y4 = int(360 - (- h * math.cos(self.angle) + w * math.sin(self.angle)) * scale_factor)
+        # pygame.draw.circle(self.screen, self.color, (720, 360), self.r * scale_factor)
         pygame.draw.polygon(self.screen, self.color, [[x1, y1], [x2, y2], [x3, y3], [x4, y4]])
         print(*[[x1, y1], [x2, y2], [x3, y3], [x4, y4]])
 
@@ -133,18 +151,23 @@ class Rocket:
         self.x += self.vx
         self.y += self.vy
 
+        self.angle += self.omega
+
+
     def switch_engine(self, keys):
         """Включает/выключает двигатель при разовом нажатии на W/S"""
         if keys[self.up_key]:
             self.engine_on = True
         elif keys[self.down_key]:
             self.engine_on = False
+
     def turn(self, keys):
         """Включает/выключает двигатель при разовом нажатии на W/S"""
+        self.nozzle_angle = 0
         if keys[self.left_key]:
-            self.angle += 1 / FPS
+            self.nozzle_angle = - 0.001
         if keys[self.right_key]:
-            self.angle -= 1 / FPS
+            self.nozzle_angle = 0.001
 
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -173,6 +196,8 @@ while not finished:
     gravity_force_x, gravity_force_y = rocket.calculate_gravity(planet)
 
     rocket.calculate_acceleration(gravity_force_x+thrust_force_x, gravity_force_y+thrust_force_y)
+    rocket.calculate_moment_of_inertia()
+    rocket.calculate_angular_acceleration()
     rocket.move()
 
     screen.fill(WHITE)
