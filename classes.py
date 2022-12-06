@@ -58,8 +58,9 @@ class Rocket:
         self.screen = screen
         self.shell_mass = 1000
         self.fuel_mass = 5000
-        self.mu = 100
-        self.u = 2000
+        self.engine_on = False
+        self.mu = 1
+        self.u = 4000000
         self.angle = 0  # угол с вертикалью, положительен обход против часовой стрелки
         self.vx = 0
         self.vy = 0
@@ -83,17 +84,20 @@ class Rocket:
 
     def calculate_thrust_force(self):
         """Возвращает массив из x- и y- составляющих силы реактивной тяги ракеты"""
-        force_x = - self.mu * self.u * math.sin(self.angle)  # при отклонении влево sin>0 -> force_x<0
-        force_y = self.mu * self.u * math.cos(self.angle)  # без отклонения cos>0 -> force_y>0 (ось y инвертирована)
+        force_x, force_y = [0, 0]
+        if self.engine_on:
+            force_x = - self.mu * self.u * math.sin(self.angle)  # при отклонении влево sin>0 -> force_x<0
+            force_y = self.mu * self.u * math.cos(self.angle)  # без отклонения cos>0 -> force_y>0 (ось y инвертирована)
         return [force_x, force_y]
+
+    def waste_fuel(self):
+        if self.engine_on:
+            self.fuel_mass -= self.mu / FPS
 
     def calculate_acceleration(self, force_x, force_y):
         """Изменяет x- и y- составляющие скорости ракеты за 1 кадр в соответствии с её полным ускорением"""
         self.vx += force_x / (self.shell_mass + self.fuel_mass) / FPS
         self.vy += force_y / (self.shell_mass + self.fuel_mass) / FPS
-
-    def waste_fuel(self):
-        self.fuel_mass -= self.mu / FPS
 
     def draw(self, scale_factor): #FIXME: я не понимаю почему он не рисует этот трижды жёваный полигон
         h = 100
@@ -111,10 +115,22 @@ class Rocket:
         print(*[[x1, y1], [x2, y2], [x3, y3], [x4, y4]])
 
         pygame.draw.circle(self.screen, self.color, (720, 360), 1)  # чтобы при удалении ракета не пропадала с экрана
+        pygame.draw.circle(self.screen, self.color, (720 - 5 * math.sin(self.angle), 360 - 5 * math.cos(self.angle)), 1)
 
     def move(self):
         self.x += self.vx
         self.y += self.vy
+
+    def switch_engine(self, keys):
+        if keys[self.up_key]:
+            self.engine_on = True
+        elif keys[self.down_key]:
+            self.engine_on = False
+    def turn(self, keys):
+        if keys[self.left_key]:
+            self.angle += 0.1
+        if keys[self.right_key]:
+            self.angle -= 0.1
 
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -133,17 +149,21 @@ while not finished:
 
     pygame.display.update()
 
+    rocket.turn(pygame.key.get_pressed())
+    rocket.switch_engine(pygame.key.get_pressed())
+
     thrust_force_x, thrust_force_y = 0, 0
     if rocket.fuel_mass > 0:
         thrust_force_x, thrust_force_y = rocket.calculate_thrust_force()
         rocket.waste_fuel()
     gravity_force_x, gravity_force_y = rocket.calculate_gravity(planet)
+
     rocket.calculate_acceleration(gravity_force_x+thrust_force_x, gravity_force_y+thrust_force_y)
     rocket.move()
 
     screen.fill(WHITE)
-    rocket.draw(planet.scale_factor)
     planet.draw(rocket)
+    rocket.draw(planet.scale_factor)
     planet.scale(pygame.key.get_pressed())
 
 pygame.quit()
