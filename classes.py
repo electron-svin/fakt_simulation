@@ -145,7 +145,15 @@ class Rocket:
         print(*[[x1, y1], [x2, y2], [x3, y3], [x4, y4]])
 
         pygame.draw.circle(self.screen, self.color, (720, 360), 1)  # чтобы при удалении ракета не пропадала с экрана
-        pygame.draw.circle(self.screen, self.color, (720 - 5 * math.sin(self.angle), 360 - 5 * math.cos(self.angle)), 1)
+        pygame.draw.circle(self.screen, self.color,
+                           (720 - 5 * math.sin(self.angle),
+                            360 - 5 * math.cos(self.angle)), 1)
+        pygame.draw.line(self.screen, BLACK, [720, 360],
+                         [720 - 40 * math.sin(self.angle),
+                          360 - 40 * math.cos(self.angle)], 1)
+        pygame.draw.line(self.screen, RED, [720, 360],
+                         [720 + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
+                          360 + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
 
     def move(self):
         self.x += self.vx
