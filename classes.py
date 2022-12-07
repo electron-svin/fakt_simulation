@@ -2,12 +2,9 @@ import math
 import pygame
 from pygame.draw import *
 
-
 FPS = 30
-
 WIDTH = 1440
 HEIGHT = 720
-
 GREY = 0x696969
 RED = 0xFF0000
 BLUE = 0x0000FF
@@ -82,29 +79,6 @@ class Rocket:
         self.down_key = pygame.K_s
         self.show_information = False
 
-    def calculate_gravity(self, obj):
-        """Возвращает массив из x- и y- составляющих силы притяжения ракеты к объекту obj"""
-        distance = ((self.x - obj.x) ** 2 + (self.y - obj.y) ** 2) ** 0.5
-        force_x = gravitational_constant * (self.shell_mass + self.fuel_mass) * obj.mass * (obj.x - self.x) / (distance ** 3)
-        force_y = gravitational_constant * (self.shell_mass + self.fuel_mass) * obj.mass * (obj.y - self.y) / (distance ** 3)
-        return [force_x, force_y]
-
-    def calculate_thrust_force(self):
-        """Возвращает массив из x- и y- составляющих силы реактивной тяги ракеты"""
-        force_x, force_y = [0, 0]
-        if self.engine_on:
-            force_x = - self.mu * self.u * math.sin(self.angle)  # при отклонении влево sin>0 -> force_x<0
-            force_y = self.mu * self.u * math.cos(self.angle)  # без отклонения cos>0 -> force_y>0 (ось y инвертирована)
-        return [force_x, force_y]
-
-    def waste_fuel(self):
-        """Тратит часть топлива каждый кадр, уменьшая fuel mass, выключает двигатель при отсутствии топлива"""
-        if self.engine_on:
-            self.fuel_mass -= self.mu / FPS
-        if self.fuel_mass <= 0:
-            self.engine_on = False
-
-
     def draw_fuel_tank(self, scale_factor):
         """Визуализирует бак прямоугольником в правом нижнем углу"""
         height = 200
@@ -115,11 +89,6 @@ class Rocket:
         remainder = height / self.max_fuel_mass * self.fuel_mass
         pygame.draw.rect(self.screen, BLACK, (WIDTH - width - 10, HEIGHT - height - 10, width, height))
         pygame.draw.rect(self.screen, color, (WIDTH - width - 10, HEIGHT - remainder - 10, width, remainder))
-
-    def calculate_acceleration(self, force_x, force_y):
-        """Изменяет x- и y- составляющие скорости ракеты за 1 кадр в соответствии с её полным ускорением"""
-        self.vx += force_x / (self.shell_mass + self.fuel_mass) / FPS
-        self.vy += force_y / (self.shell_mass + self.fuel_mass) / FPS
 
     def calculate_moment_of_inertia(self):
         self.moment_of_inertia = (self.shell_mass + self.fuel_mass) * (self.height ** 2 / 4 + self.coord_cm ** 2) / 6
@@ -197,42 +166,5 @@ class Rocket:
         elif keys[pygame.K_q]:
             self.show_information = False
 
-
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-clock = pygame.time.Clock()
-finished = False
-
-rocket = Rocket(screen)
-planet = Planet(screen)
-
-while not finished:
-
-    clock.tick(FPS)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            finished = True
-
-    pygame.display.update()
-
-    rocket.turn(pygame.key.get_pressed())
-    rocket.switch_engine(pygame.key.get_pressed())
-
-    thrust_force_x, thrust_force_y = 0, 0
-    if rocket.fuel_mass > 0:
-        thrust_force_x, thrust_force_y = rocket.calculate_thrust_force()
-        rocket.waste_fuel()
-    gravity_force_x, gravity_force_y = rocket.calculate_gravity(planet)
-
-    rocket.calculate_acceleration(gravity_force_x+thrust_force_x, gravity_force_y+thrust_force_y)
-    rocket.calculate_moment_of_inertia()
-    rocket.calculate_angular_acceleration()
-    rocket.move()
-
-    screen.fill(WHITE)
-    planet.draw(rocket)
-    rocket.change_inf_mode(pygame.key.get_pressed())
-    rocket.draw(planet.scale_factor)
-    rocket.draw_fuel_tank(planet.scale_factor)
-    planet.scale(pygame.key.get_pressed())
-
-pygame.quit()
+if __name__ == "__main__":
+    print("This module is not for direct call!")

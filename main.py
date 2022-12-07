@@ -1,103 +1,56 @@
 import pygame
 from pygame.draw import *
 
+from model import *
+from classes import *
+
 FPS = 30
+dt = 0.0333333
 
 WIDTH = 1440
 HEIGHT = 720
 
-GREY = 0x696969
-RED = 0xFF0000
-BLUE = 0x0000FF
-YELLOW = 0xFFC91F
-GREEN = 0x00FF00
-MAGENTA = 0xFF03B8
-CYAN = 0x00FFCC
-BLACK = (0, 0, 0)
-WHITE = 0xFFFFFF
-GREY = 0x7D7D7D
 
+def main():
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    clock = pygame.time.Clock()
+    finished = False
 
-class Rocket:
+    rocket = Rocket(screen)
+    planet = Planet(screen)
 
-    def __init__(self, screen):
-        """Target class constructor
+    while not finished:
 
-        :param screen: pygame screen
-        :param gun: tank's gun
-        """
-        self.screen = screen
-        self.vx = 10
-        self.vy = 10
-        self.x = 0
-        self.y = 6400*10**3
-        self.r = 30
-        self.color = BLUE
-        self.left_key = pygame.K_a
-        self.right_key = pygame.K_d
-        self.up_key = pygame.K_w
-        self.down_key = pygame.K_s
-        self.fire_key = pygame.K_e
-        self.change_key = pygame.K_q
+        clock.tick(FPS)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                finished = True
 
-    def draw(self, scale_factor):
-        pygame.draw.circle(self.screen, self.color, (720, 360), self.r * scale_factor)
+        pygame.display.update()
 
-    def move(self, keys):
+        rocket.turn(pygame.key.get_pressed())
+        rocket.switch_engine(pygame.key.get_pressed())
 
-        if keys[self.left_key]:
-            self.x -= self.vx
-        if keys[self.right_key]:
-            self.x += self.vx
-        if keys[self.up_key]:
-            self.y += self.vy
-        if keys[self.down_key]:
-            self.y -= self.vy
+        thrust_force_x, thrust_force_y = 0, 0
+        if rocket.fuel_mass > 0:
+            thrust_force_x, thrust_force_y = calculate_thrust_force(rocket)
+            waste_fuel(rocket, dt)
+        gravity_force_x, gravity_force_y = calculate_gravity(rocket, planet)
 
-class Planet:
+        calculate_acceleration(rocket, gravity_force_x + thrust_force_x, gravity_force_y + thrust_force_y, dt)
+        calculate_moment_of_inertia(rocket)
+        calculate_angular_acceleration(rocket)
+        move(rocket)
 
-    def __init__(self, screen):
+        screen.fill(WHITE)
+        planet.draw(rocket)
+        rocket.change_inf_mode(pygame.key.get_pressed())
+        rocket.draw(planet.scale_factor)
+        rocket.draw_fuel_tank(planet.scale_factor)
+        planet.scale(pygame.key.get_pressed())
 
-        self.screen = screen
-        self.x = 0
-        self.y = 0
-        self.r = 6400*10**3
-        self.color = GREEN
-        self.scale_factor = 1
-        self.up = pygame.K_UP
-        self.down = pygame.K_DOWN
+    pygame.quit()
 
-    def draw(self, rocket):
-        pygame.draw.circle(self.screen, self.color,
-                           (720 + (-rocket.x + self.x) * self.scale_factor ,
-                            360 + (rocket.y - self.y) * self.scale_factor),
-                           self.r * self.scale_factor)
+if __name__ == "__main__":
+    main()
 
-    def scale(self, keys):
-        if keys[self.up]:
-            self.scale_factor *= 1.05
-        if keys[self.down]:
-            self.scale_factor /= 1.05
-
-
-
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-clock = pygame.time.Clock()
-finished = False
-
-rocket = Rocket(screen)
-planet = Planet(screen)
-
-while not finished:
-
-    clock.tick(FPS)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            finished = True
-    pygame.display.update()
-    screen.fill(WHITE)
-    rocket.draw(planet.scale_factor)
-    planet.draw(rocket)
-    planet.scale(pygame.key.get_pressed())
-    rocket.move(pygame.key.get_pressed())
-pygame.quit()
