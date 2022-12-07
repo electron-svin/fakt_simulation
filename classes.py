@@ -35,6 +35,7 @@ class Planet:
         self.scale_factor = 1
         self.up = pygame.K_UP
         self.down = pygame.K_DOWN
+        self.local = pygame.K_MINUS
 
     def draw(self, rocket):
         pygame.draw.circle(self.screen, self.color,
@@ -47,10 +48,11 @@ class Planet:
             self.scale_factor *= 1.05
         if keys[self.down]:
             self.scale_factor /= 1.05
+        if keys[self.local]:
+            self.scale_factor = 2
 
 
 class Rocket:
-
     def __init__(self, screen):
         """Target class constructor
         """
@@ -73,13 +75,12 @@ class Rocket:
         self.x = 0
         self.y = 6400000
         self.r = 30
-        self.color = GREY
+        self.color = (160, 160, 180)
         self.left_key = pygame.K_a
         self.right_key = pygame.K_d
         self.up_key = pygame.K_w
         self.down_key = pygame.K_s
-        self.fire_key = pygame.K_e
-        self.change_key = pygame.K_q
+        self.show_information = False
 
     def calculate_gravity(self, obj):
         """Возвращает массив из x- и y- составляющих силы притяжения ракеты к объекту obj"""
@@ -140,27 +141,40 @@ class Rocket:
         y3 = int(360 - (- h * math.cos(self.angle) - w * math.sin(self.angle)) * scale_factor)
         x4 = int(720 + (+ h * math.sin(self.angle) + w * math.cos(self.angle)) * scale_factor)
         y4 = int(360 - (- h * math.cos(self.angle) + w * math.sin(self.angle)) * scale_factor)
-        # pygame.draw.circle(self.screen, self.color, (720, 360), self.r * scale_factor)
-        pygame.draw.polygon(self.screen, self.color, [[x1, y1], [x2, y2], [x3, y3], [x4, y4]])
-        print(*[[x1, y1], [x2, y2], [x3, y3], [x4, y4]])
 
+        xh3 = int(720 + (- (h + 15) * math.sin(self.angle) - (w - 2) * math.cos(self.angle)) * scale_factor)
+        yh3 = int(360 - (+ (h + 15) * math.cos(self.angle) - (w - 2) * math.sin(self.angle)) * scale_factor)
+        xh5 = int(720 + (- (h + 25) * math.sin(self.angle) + (w - 6) * math.cos(self.angle)) * scale_factor)
+        yh5 = int(360 - (+ (h + 25) * math.cos(self.angle) + (w - 6) * math.sin(self.angle)) * scale_factor)
+        xh4 = int(720 + (- (h + 25) * math.sin(self.angle) - (w - 6) * math.cos(self.angle)) * scale_factor)
+        yh4 = int(360 - (+ (h + 25) * math.cos(self.angle) - (w - 6) * math.sin(self.angle)) * scale_factor)
+        xh6 = int(720 + (- (h + 15) * math.sin(self.angle) + (w - 2) * math.cos(self.angle)) * scale_factor)
+        yh6 = int(360 - (+ (h + 15) * math.cos(self.angle) + (w - 2) * math.sin(self.angle)) * scale_factor)
+
+        pygame.draw.polygon(self.screen, self.color,
+                            [[x1, y1], [x2, y2],
+                             [x3, y3], [x4, y4]])
+        pygame.draw.polygon(self.screen, self.color,
+                            [[x1, y1], [x2, y2],
+                             [xh3, yh3], [xh4, yh4],
+                             [xh5, yh5], [xh6, yh6]])
         pygame.draw.circle(self.screen, self.color, (720, 360), 1)  # чтобы при удалении ракета не пропадала с экрана
         pygame.draw.circle(self.screen, self.color,
                            (720 - 5 * math.sin(self.angle),
                             360 - 5 * math.cos(self.angle)), 1)
-        pygame.draw.line(self.screen, BLACK, [720, 360],
-                         [720 - 40 * math.sin(self.angle),
-                          360 - 40 * math.cos(self.angle)], 1)
-        pygame.draw.line(self.screen, RED, [720, 360],
-                         [720 + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
-                          360 + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
+        if self.show_information:
+            pygame.draw.line(self.screen, BLACK, [720, 360],
+                             [720 - 40 * math.sin(self.angle),
+                              360 - 40 * math.cos(self.angle)], 2)
+            pygame.draw.line(self.screen, RED, [720, 360],
+                             [720 + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
+                              360 + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
 
     def move(self):
         self.x += self.vx
         self.y += self.vy
 
         self.angle += self.omega
-
 
     def switch_engine(self, keys):
         """Включает/выключает двигатель при разовом нажатии на W/S"""
@@ -176,6 +190,12 @@ class Rocket:
             self.nozzle_angle = - 0.001
         if keys[self.right_key]:
             self.nozzle_angle = 0.001
+
+    def change_inf_mode(self, keys):  #FIXME: должно считывать разовое нажатие,
+        if keys[pygame.K_q] and not self.show_information:
+            self.show_information = True
+        elif keys[pygame.K_q]:
+            self.show_information = False
 
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -210,6 +230,7 @@ while not finished:
 
     screen.fill(WHITE)
     planet.draw(rocket)
+    rocket.change_inf_mode(pygame.key.get_pressed())
     rocket.draw(planet.scale_factor)
     rocket.draw_fuel_tank(planet.scale_factor)
     planet.scale(pygame.key.get_pressed())
