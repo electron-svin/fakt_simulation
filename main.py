@@ -45,6 +45,8 @@ def main():
         screen.fill(WHITE)
         planet.draw(rocket)
         rocket.change_inf_mode(pygame.key.get_pressed())
+        rocket.change_info_timer_count()
+
         rocket.draw(planet.scale_factor)
         rocket.draw_fuel_tank(planet.scale_factor)
         planet.scale(pygame.key.get_pressed())

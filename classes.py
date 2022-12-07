@@ -77,7 +77,9 @@ class Rocket:
         self.right_key = pygame.K_d
         self.up_key = pygame.K_w
         self.down_key = pygame.K_s
+        self.change_key = pygame.K_q
         self.show_information = False
+        self.change_info_timer = 0
 
     def draw_fuel_tank(self, scale_factor):
         """Визуализирует бак прямоугольником в правом нижнем углу"""
@@ -160,11 +162,15 @@ class Rocket:
         if keys[self.right_key]:
             self.nozzle_angle = 0.001
 
-    def change_inf_mode(self, keys):  #FIXME: должно считывать разовое нажатие,
-        if keys[pygame.K_q] and not self.show_information:
-            self.show_information = True
-        elif keys[pygame.K_q]:
-            self.show_information = False
+    def change_inf_mode(self, keys):
+        if self.change_info_timer == 0 and keys[self.change_key]:
+            self.show_information = not(self.show_information)
+            self.change_info_timer = 5
+
+    def change_info_timer_count(self):
+        if self.change_info_timer > 0:
+            self.change_info_timer -= 1
+
 
 if __name__ == "__main__":
     print("This module is not for direct call!")
