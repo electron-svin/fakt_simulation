@@ -8,6 +8,7 @@ rocket_mass = 1
 fuel_mass = 1
 mu = 1 #скорость изменения массы топлива
 u = 1 #скороскть истекания топлива относительно ракеты
+dt = 0.01
 
 
 def calculate_gravity(rocket, obj):
@@ -20,7 +21,7 @@ def calculate_gravity(rocket, obj):
     return [force_x, force_y]
 
 
-def calculate_acceleration(rocket, force_x, force_y, dt):
+def calculate_acceleration(rocket, force_x, force_y):
     """Изменяет x- и y- составляющие скорости ракеты за 1 кадр в соответствии с её полным ускорением"""
     rocket.vx += (force_x / (rocket.shell_mass + rocket.fuel_mass)) * dt
     rocket.vy += (force_y / (rocket.shell_mass + rocket.fuel_mass)) * dt
@@ -35,7 +36,7 @@ def calculate_thrust_force(rocket):
     return [force_x, force_y]
 
 
-def waste_fuel(rocket, dt):
+def waste_fuel(rocket):
     """Тратит часть топлива каждый кадр, уменьшая fuel mass, выключает двигатель при отсутствии топлива"""
     if rocket.engine_on:
         rocket.fuel_mass -= rocket.mu * dt
@@ -56,6 +57,23 @@ def move(rocket):
     rocket.y += rocket.vy
 
     rocket.angle += rocket.omega
+
+def calculate_physical_time(planet):
+    planet.time += int(planet.dT / dt) * dt
+
+def calculate_rocket(rocket, planet):
+    for i in range(int(planet.dT / dt)):
+        thrust_force_x, thrust_force_y = 0, 0
+        if rocket.fuel_mass > 0:
+            thrust_force_x, thrust_force_y = calculate_thrust_force(rocket)
+            waste_fuel(rocket)
+        gravity_force_x, gravity_force_y = calculate_gravity(rocket, planet)
+
+        calculate_acceleration(rocket, gravity_force_x + thrust_force_x, gravity_force_y + thrust_force_y)
+        calculate_moment_of_inertia(rocket)
+        calculate_angular_acceleration(rocket)
+        move(rocket)
+
 
 if __name__ == "__main__":
     print("This module is not for direct call!")

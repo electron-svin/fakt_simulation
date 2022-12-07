@@ -33,6 +33,10 @@ class Planet:
         self.up = pygame.K_UP
         self.down = pygame.K_DOWN
         self.local = pygame.K_MINUS
+        self.left = pygame.K_LEFT
+        self.right = pygame.K_RIGHT
+        self.time = 0
+        self.dT = 0.03
 
     def draw(self, rocket):
         pygame.draw.circle(self.screen, self.color,
@@ -48,6 +52,11 @@ class Planet:
         if keys[self.local]:
             self.scale_factor = 2
 
+    def time_scale(self, keys):
+        if keys[self.left] and self.dT > 0.03:
+            self.dT /= 1.05
+        if keys[self.right]:
+            self.dT *= 1.2
 
 class Rocket:
     def __init__(self, screen):
@@ -92,14 +101,6 @@ class Rocket:
         pygame.draw.rect(self.screen, BLACK, (WIDTH - width - 10, HEIGHT - height - 10, width, height))
         pygame.draw.rect(self.screen, color, (WIDTH - width - 10, HEIGHT - remainder - 10, width, remainder))
 
-    def calculate_moment_of_inertia(self):
-        self.moment_of_inertia = (self.shell_mass + self.fuel_mass) * (self.height ** 2 / 4 + self.coord_cm ** 2) / 6
-
-    def calculate_angular_acceleration(self):
-        if self.engine_on:
-            moment_of_power = - self.mu * self.u * (self.height / 2 + self.coord_cm) * math.sin(self.nozzle_angle)
-            epsilon = moment_of_power / self.moment_of_inertia
-            self.omega += epsilon
 
     def draw(self, scale_factor):
         h = self.height / 2

@@ -5,15 +5,26 @@ from model import *
 from classes import *
 
 FPS = 30
-dt = 0.0333333
+dT = 0.03
 
 WIDTH = 1440
 HEIGHT = 720
 
 
+def text_score(text, planet, rocket):
+    txt = text.render('time: ' + f"{planet.time:.{5}f}" + " s", True, (139, 0, 255))
+    planet.screen.blit(txt, (20, 30))
+    txt = text.render('height: ' + f"{(rocket.x**2 + rocket.y**2)**0.5  - 6400_000:.{5}f}" + " м", True, (139, 0, 255))
+    planet.screen.blit(txt, (20, 50))
+
+    pygame.display.update()
+
+
 def main():
+    pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
+    text = pygame.font.Font(None, 24)
     finished = False
 
     rocket = Rocket(screen)
@@ -31,16 +42,7 @@ def main():
         rocket.turn(pygame.key.get_pressed())
         rocket.switch_engine(pygame.key.get_pressed())
 
-        thrust_force_x, thrust_force_y = 0, 0
-        if rocket.fuel_mass > 0:
-            thrust_force_x, thrust_force_y = calculate_thrust_force(rocket)
-            waste_fuel(rocket, dt)
-        gravity_force_x, gravity_force_y = calculate_gravity(rocket, planet)
-
-        calculate_acceleration(rocket, gravity_force_x + thrust_force_x, gravity_force_y + thrust_force_y, dt)
-        calculate_moment_of_inertia(rocket)
-        calculate_angular_acceleration(rocket)
-        move(rocket)
+        calculate_rocket(rocket, planet)
 
         screen.fill(WHITE)
         planet.draw(rocket)
@@ -50,6 +52,10 @@ def main():
         rocket.draw(planet.scale_factor)
         rocket.draw_fuel_tank(planet.scale_factor)
         planet.scale(pygame.key.get_pressed())
+        planet.time_scale(pygame.key.get_pressed())
+
+        text_score(text, planet, rocket)
+        calculate_physical_time(planet)
 
     pygame.quit()
 
