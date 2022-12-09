@@ -36,9 +36,9 @@ class Planet:
         self.left = pygame.K_LEFT
         self.right = pygame.K_RIGHT
         self.time = 0
-        self.dT = 0.03
+        self.dT = 0.06
+        self.time_factor = 1
         self.surface = pygame.Surface((1440, 720))
-        self.image = pygame.image.load("picture\\earth.png")
 
     def draw(self, rocket):
 
@@ -47,7 +47,7 @@ class Planet:
                             360 + (rocket.y - self.y) * self.scale_factor),
                            self.r * self.scale_factor)
 
-
+        
     def scale(self, keys):
         if keys[self.up]:
             self.scale_factor *= 1.05
@@ -58,9 +58,10 @@ class Planet:
 
     def time_scale(self, keys):
         if keys[self.left] and self.dT > 0.03:
-            self.dT /= 1.05
+            self.dT /= 1.2
         if keys[self.right]:
             self.dT *= 1.2
+
 
 class Rocket:
     def __init__(self, screen):
@@ -72,11 +73,11 @@ class Rocket:
         self.moment_of_inertia = 5*10**6  # момент инерции относительно центра масс
         self.nozzle_angle = 0  # угол поворота сопла
         self.shell_mass = 5000
-        self.max_fuel_mass = 50000
+        self.max_fuel_mass = 20000
         self.fuel_mass = self.max_fuel_mass
         self.engine_on = False
-        self.mu = 100
-        self.u = 10000
+        self.mu = 400
+        self.u = 4000
         self.angle = 0  # угол с вертикалью, положителен обход против часовой стрелки
         self.vx = 0
         self.vy = 0
@@ -93,8 +94,9 @@ class Rocket:
         self.show_information = False
         self.change_info_timer = 0
         self.image = pygame.image.load("picture\\rocket.png")
+        self.collision_point = [(0, -35), (-24.75, 35), (24.75, 35)]
 
-    def draw_fuel_tank(self, scale_factor):
+    def draw_fuel_tank(self):
         """Визуализирует бак прямоугольником в правом нижнем углу"""
         height = 200
         width = 40
@@ -104,7 +106,6 @@ class Rocket:
         remainder = height / self.max_fuel_mass * self.fuel_mass
         pygame.draw.rect(self.screen, BLACK, (WIDTH - width - 10, HEIGHT - height - 10, width, height))
         pygame.draw.rect(self.screen, color, (WIDTH - width - 10, HEIGHT - remainder - 10, width, remainder))
-
 
     def draw(self, scale_factor):
         current_image = pygame.transform.scale(self.image, (int(self.height * scale_factor), int(self.height * scale_factor)))
@@ -119,7 +120,11 @@ class Rocket:
             pygame.draw.line(self.screen, RED, [720, 360],
                              [720 + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
                               360 + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
-
+        
+        for point in self.collision_point:
+            pygame.draw.circle(self.screen, BLUE,
+                               (720 + (point[0] * math.cos(self.angle) + point[1] * math.sin(self.angle)) * scale_factor,
+            360 + (point[1] * math.cos(self.angle) - point[0] * math.sin(self.angle)) * scale_factor), 5)
 
     def switch_engine(self, keys):
         """Включает/выключает двигатель при разовом нажатии на W/S"""

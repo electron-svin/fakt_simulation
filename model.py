@@ -71,6 +71,7 @@ def calculate_rocket(rocket, planet):
 
         calculate_acceleration(rocket, gravity_force_x + thrust_force_x, gravity_force_y + thrust_force_y)
         calculate_moment_of_inertia(rocket)
+        collision(planet, rocket)
         calculate_angular_acceleration(rocket)
         move(rocket)
 
@@ -90,6 +91,21 @@ def calculate_ellipse_param(rocket, obj, energy):
     a = - gravitational_constant * (rocket.shell_mass + rocket.fuel_mass) * obj.mass / energy
     b = 10 #чуть позже
     return a, b
+
+
+def collision(planet, rocket):
+    for point in rocket.collision_point:
+        if (point[0] * math.cos(rocket.angle) + point[1] * math.sin(rocket.angle) + rocket.x) ** 2 + \
+                (point[1] * math.cos(rocket.angle) - point[0] * math.sin(rocket.angle) + rocket.y)**2 <= planet.r ** 2:
+            normal_velocity = (rocket.vx * rocket.x + rocket.vy * rocket.y) / ((rocket.x ** 2 + rocket.y ** 2) ** 0.5)
+            if normal_velocity <= 0:
+                rocket.vx -= normal_velocity * rocket.x / (rocket.x ** 2 + rocket.y ** 2) ** 0.5
+                rocket.vy -= normal_velocity * rocket.y / (rocket.x ** 2 + rocket.y ** 2) ** 0.5
+                rocket.vx /= 2
+                rocket.vy /= 2
+                rocket.omega = 0
+
+            break
 
 
 if __name__ == "__main__":
