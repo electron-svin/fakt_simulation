@@ -14,10 +14,11 @@ dt = 0.01
 def calculate_gravity(rocket, obj):
     """Возвращает массив из x- и y- составляющих силы притяжения ракеты к объекту obj"""
     distance = ((rocket.x - obj.x) ** 2 + (rocket.y - obj.y) ** 2) ** 0.5
-    force_x = gravitational_constant * (rocket.shell_mass + rocket.fuel_mass) * obj.mass * (obj.x - rocket.x) / (
-                distance ** 3)
-    force_y = gravitational_constant * (rocket.shell_mass + rocket.fuel_mass) * obj.mass * (obj.y - rocket.y) / (
-                distance ** 3)
+    force = (gravitational_constant * (rocket.shell_mass + rocket.fuel_mass)* obj.mass) / distance ** 2
+    alpha = math.atan2((obj.y - rocket.y), (obj.x - rocket.x))
+    force_x = force * math.cos(alpha)
+    force_y = force * math.sin(alpha)
+
     return [force_x, force_y]
 
 

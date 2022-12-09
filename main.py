@@ -36,6 +36,9 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 finished = True
+            elif event.type == pygame.KEYDOWN:
+                if event.key == 27:
+                    finished = True
 
         pygame.display.update()
 
