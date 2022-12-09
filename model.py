@@ -27,7 +27,6 @@ def calculate_acceleration(rocket, force_x, force_y):
     rocket.vx += (force_x / (rocket.shell_mass + rocket.fuel_mass)) * dt
     rocket.vy += (force_y / (rocket.shell_mass + rocket.fuel_mass)) * dt
 
-
 def calculate_thrust_force(rocket):
     """Возвращает массив из x- и y- составляющих силы реактивной тяги ракеты"""
     force_x, force_y = [0, 0]
@@ -74,6 +73,22 @@ def calculate_rocket(rocket, planet):
         calculate_moment_of_inertia(rocket)
         calculate_angular_acceleration(rocket)
         move(rocket)
+
+
+def calculate_energy(rocket, force, obj):
+    """Возвращает энергию в каждый момент времени"""
+    distance = ((rocket.x - obj.x) ** 2 + (rocket.y - obj.y) ** 2)
+    potentional_energy =  - gravitational_constant * obj.mass / distance
+    kinetic_energy = (rocket.shell_mass + rocket.fuel_mass) * (rocket.vx ** 2 + rocket.vy ** 2) / 2
+    energy = potentional_energy + kinetic_energy
+
+    return energy
+
+def calculate_ellipse_param(rocket, obj, energy):
+    """Просчитывает параметры эллипса и возвращает их"""
+    a = - gravitational_constant * (rocket.shell_mass + rocket.fuel_mass) * obj.mass / energy
+    b = 10 #чуть позже
+    return a,b
 
 
 if __name__ == "__main__":
