@@ -89,6 +89,7 @@ class Rocket:
         self.change_key = pygame.K_q
         self.show_information = False
         self.change_info_timer = 0
+        self.image = pygame.image.load("picture\\rocket.png")
 
     def draw_fuel_tank(self, scale_factor):
         """Визуализирует бак прямоугольником в правом нижнем углу"""
@@ -103,37 +104,11 @@ class Rocket:
 
 
     def draw(self, scale_factor):
-        h = self.height / 2
-        w = self.width / 2
-        x1 = int(720 + (- h * math.sin(self.angle) + w * math.cos(self.angle)) * scale_factor)
-        y1 = int(360 - (+ h * math.cos(self.angle) + w * math.sin(self.angle)) * scale_factor)
-        x2 = int(720 + (- h * math.sin(self.angle) - w * math.cos(self.angle)) * scale_factor)
-        y2 = int(360 - (+ h * math.cos(self.angle) - w * math.sin(self.angle)) * scale_factor)
-        x3 = int(720 + (+ h * math.sin(self.angle) - w * math.cos(self.angle)) * scale_factor)
-        y3 = int(360 - (- h * math.cos(self.angle) - w * math.sin(self.angle)) * scale_factor)
-        x4 = int(720 + (+ h * math.sin(self.angle) + w * math.cos(self.angle)) * scale_factor)
-        y4 = int(360 - (- h * math.cos(self.angle) + w * math.sin(self.angle)) * scale_factor)
+        current_image = pygame.transform.scale(self.image, (int(200 * scale_factor), int(200 * scale_factor)))
+        current_image = pygame.transform.rotate(current_image, self.angle * 180/3.14)
+        current_image_rect = current_image.get_rect(center=(720, 360))
+        self.screen.blit(current_image, current_image_rect)
 
-        xh3 = int(720 + (- (h + 15) * math.sin(self.angle) - (w - 2) * math.cos(self.angle)) * scale_factor)
-        yh3 = int(360 - (+ (h + 15) * math.cos(self.angle) - (w - 2) * math.sin(self.angle)) * scale_factor)
-        xh5 = int(720 + (- (h + 25) * math.sin(self.angle) + (w - 6) * math.cos(self.angle)) * scale_factor)
-        yh5 = int(360 - (+ (h + 25) * math.cos(self.angle) + (w - 6) * math.sin(self.angle)) * scale_factor)
-        xh4 = int(720 + (- (h + 25) * math.sin(self.angle) - (w - 6) * math.cos(self.angle)) * scale_factor)
-        yh4 = int(360 - (+ (h + 25) * math.cos(self.angle) - (w - 6) * math.sin(self.angle)) * scale_factor)
-        xh6 = int(720 + (- (h + 15) * math.sin(self.angle) + (w - 2) * math.cos(self.angle)) * scale_factor)
-        yh6 = int(360 - (+ (h + 15) * math.cos(self.angle) + (w - 2) * math.sin(self.angle)) * scale_factor)
-
-        pygame.draw.polygon(self.screen, self.color,
-                            [[x1, y1], [x2, y2],
-                             [x3, y3], [x4, y4]])
-        pygame.draw.polygon(self.screen, self.color,
-                            [[x1, y1], [x2, y2],
-                             [xh3, yh3], [xh4, yh4],
-                             [xh5, yh5], [xh6, yh6]])
-        pygame.draw.circle(self.screen, self.color, (720, 360), 1)  # чтобы при удалении ракета не пропадала с экрана
-        pygame.draw.circle(self.screen, self.color,
-                           (720 - 5 * math.sin(self.angle),
-                            360 - 5 * math.cos(self.angle)), 1)
         if self.show_information:
             pygame.draw.line(self.screen, BLACK, [720, 360],
                              [720 - 40 * math.sin(self.angle),
@@ -142,11 +117,6 @@ class Rocket:
                              [720 + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
                               360 + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
 
-    def move(self):
-        self.x += self.vx
-        self.y += self.vy
-
-        self.angle += self.omega
 
     def switch_engine(self, keys):
         """Включает/выключает двигатель при разовом нажатии на W/S"""

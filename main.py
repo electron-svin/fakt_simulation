@@ -12,9 +12,9 @@ HEIGHT = 720
 
 
 def text_score(text, planet, rocket):
-    txt = text.render('time: ' + f"{planet.time:.{5}f}" + " s", True, (139, 0, 255))
+    txt = text.render('time: ' + f"{planet.time:.{1}f}" + " s", True, (139, 0, 255))
     planet.screen.blit(txt, (20, 30))
-    txt = text.render('height: ' + f"{(rocket.x**2 + rocket.y**2)**0.5  - 6400_000:.{5}f}" + " м", True, (139, 0, 255))
+    txt = text.render('height: ' + f"{(rocket.x**2 + rocket.y**2)**0.5  - 6400_000:.{1}f}" + " м", True, (139, 0, 255))
     planet.screen.blit(txt, (20, 50))
 
     pygame.display.update()
