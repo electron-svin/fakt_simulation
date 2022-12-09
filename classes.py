@@ -29,7 +29,7 @@ class Planet:
         self.r = 6400 * 10 ** 3
         self.interaction_r = 6400 * 10 ** 6
         self.color = GREEN
-        self.scale_factor = 1
+        self.scale_factor = 2
         self.up = pygame.K_UP
         self.down = pygame.K_DOWN
         self.local = pygame.K_MINUS
@@ -37,12 +37,16 @@ class Planet:
         self.right = pygame.K_RIGHT
         self.time = 0
         self.dT = 0.03
+        self.surface = pygame.Surface((1440, 720))
+        self.image = pygame.image.load("picture\\earth.png")
 
     def draw(self, rocket):
+
         pygame.draw.circle(self.screen, self.color,
                            (720 + (-rocket.x + self.x) * self.scale_factor,
                             360 + (rocket.y - self.y) * self.scale_factor),
                            self.r * self.scale_factor)
+
 
     def scale(self, keys):
         if keys[self.up]:
@@ -63,23 +67,22 @@ class Rocket:
         """Target class constructor
         """
         self.screen = screen
-        self.height = 100
-        self.width = 20
+        self.height = 70
         self.coord_cm = 0  # растояние вверх от центра ракеты до центра масс
-        self.moment_of_inertia = 100000  # момент инерции относительно центра масс
+        self.moment_of_inertia = 5*10**6  # момент инерции относительно центра масс
         self.nozzle_angle = 0  # угол поворота сопла
-        self.shell_mass = 1000
-        self.max_fuel_mass = 500
+        self.shell_mass = 5000
+        self.max_fuel_mass = 50000
         self.fuel_mass = self.max_fuel_mass
         self.engine_on = False
-        self.mu = 10
-        self.u = 4000
+        self.mu = 100
+        self.u = 10000
         self.angle = 0  # угол с вертикалью, положителен обход против часовой стрелки
         self.vx = 0
         self.vy = 0
         self.omega = 0 # угловая скорость вращения против часовой стрелки
         self.x = 0
-        self.y = 6400000
+        self.y = 6400000 + self.height / 2
         self.r = 30
         self.color = (160, 160, 180)
         self.left_key = pygame.K_a
@@ -104,7 +107,7 @@ class Rocket:
 
 
     def draw(self, scale_factor):
-        current_image = pygame.transform.scale(self.image, (int(200 * scale_factor), int(200 * scale_factor)))
+        current_image = pygame.transform.scale(self.image, (int(self.height * scale_factor), int(self.height * scale_factor)))
         current_image = pygame.transform.rotate(current_image, self.angle * 180/3.14)
         current_image_rect = current_image.get_rect(center=(720, 360))
         self.screen.blit(current_image, current_image_rect)
@@ -136,7 +139,7 @@ class Rocket:
     def change_inf_mode(self, keys):
         if self.change_info_timer == 0 and keys[self.change_key]:
             self.show_information = not(self.show_information)
-            self.change_info_timer = 5
+            self.change_info_timer = 10
 
     def change_info_timer_count(self):
         if self.change_info_timer > 0:

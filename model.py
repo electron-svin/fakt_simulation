@@ -4,17 +4,13 @@ gravitational_constant = 6.67408E-11
 """Гравитационная постоянная Ньютона G"""
 planet_mass = 5.9742E24
 R_planet = 6371
-rocket_mass = 1
-fuel_mass = 1
-mu = 1 #скорость изменения массы топлива
-u = 1 #скороскть истекания топлива относительно ракеты
-dt = 0.01
+dt = 0.001
 
 
 def calculate_gravity(rocket, obj):
     """Возвращает массив из x- и y- составляющих силы притяжения ракеты к объекту obj"""
     distance = ((rocket.x - obj.x) ** 2 + (rocket.y - obj.y) ** 2) ** 0.5
-    force = (gravitational_constant * (rocket.shell_mass + rocket.fuel_mass)* obj.mass) / distance ** 2
+    force = (gravitational_constant * (rocket.shell_mass + rocket.fuel_mass) * obj.mass) / distance ** 2
     alpha = math.atan2((obj.y - rocket.y), (obj.x - rocket.x))
     force_x = force * math.cos(alpha)
     force_y = force * math.sin(alpha)
@@ -46,20 +42,24 @@ def waste_fuel(rocket):
 def calculate_moment_of_inertia(rocket):
     rocket.moment_of_inertia = (rocket.shell_mass + rocket.fuel_mass) * (rocket.height ** 2 / 4 + rocket.coord_cm ** 2) / 6
 
+
 def calculate_angular_acceleration(rocket):
     if rocket.engine_on:
         moment_of_power = - rocket.mu * rocket.u * (rocket.height / 2 + rocket.coord_cm) * math.sin(rocket.nozzle_angle)
         epsilon = moment_of_power / rocket.moment_of_inertia
-        rocket.omega += epsilon
-        
-def move(rocket):
-    rocket.x += rocket.vx
-    rocket.y += rocket.vy
+        rocket.omega += epsilon * dt
 
-    rocket.angle += rocket.omega
+
+def move(rocket):
+    rocket.x += rocket.vx * dt
+    rocket.y += rocket.vy * dt
+
+    rocket.angle += rocket.omega * dt
+
 
 def calculate_physical_time(planet):
     planet.time += int(planet.dT / dt) * dt
+
 
 def calculate_rocket(rocket, planet):
     for i in range(int(planet.dT / dt)):
@@ -75,20 +75,21 @@ def calculate_rocket(rocket, planet):
         move(rocket)
 
 
-def calculate_energy(rocket, force, obj):
+def calculate_energy(rocket, obj):
     """Возвращает энергию в каждый момент времени"""
     distance = ((rocket.x - obj.x) ** 2 + (rocket.y - obj.y) ** 2)
-    potentional_energy =  - gravitational_constant * obj.mass / distance
+    potentional_energy = - gravitational_constant * obj.mass / distance
     kinetic_energy = (rocket.shell_mass + rocket.fuel_mass) * (rocket.vx ** 2 + rocket.vy ** 2) / 2
     energy = potentional_energy + kinetic_energy
 
     return energy
 
+
 def calculate_ellipse_param(rocket, obj, energy):
     """Просчитывает параметры эллипса и возвращает их"""
     a = - gravitational_constant * (rocket.shell_mass + rocket.fuel_mass) * obj.mass / energy
     b = 10 #чуть позже
-    return a,b
+    return a, b
 
 
 if __name__ == "__main__":
