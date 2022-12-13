@@ -4,7 +4,7 @@ gravitational_constant = 6.67408E-11
 """Гравитационная постоянная Ньютона G"""
 planet_mass = 5.9742E24
 R_planet = 6371
-dt = 0.001
+dt = 0.01
 
 
 def calculate_gravity(rocket, obj):

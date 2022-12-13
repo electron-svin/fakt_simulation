@@ -36,8 +36,12 @@ class Planet:
         self.left = pygame.K_LEFT
         self.right = pygame.K_RIGHT
         self.time = 0
-        self.dT = 0.06
+        self.dT = 0.03
+        self.dT_initial = 0.03
+        self.time_scale_counter = 0
         self.time_factor = 1
+        self.time_scale_array = [1, 2, 3, 5, 10, 50, 100, 200, 500, 1000]
+        self.time_scale_index = 0
         self.surface = pygame.Surface((WIDTH, HEIGHT))
 
     def draw(self, rocket):
@@ -57,16 +61,25 @@ class Planet:
             self.scale_factor = 2
 
     def time_scale(self, keys):
-        if keys[self.left] and self.dT > 0.03:
-            self.dT /= 1.2
-        if keys[self.right]:
-            self.dT *= 1.2
+        if self.time_scale_counter == 0 and keys[self.left]:
+            if self.time_scale_index > 0:
+                self.time_scale_index -= 1
+                self.dT = self.dT_initial * self.time_scale_array[self.time_scale_index]
+                self.time_scale_counter = 5
+        if self.time_scale_counter == 0 and keys[self.right]:
+            if self.time_scale_index < len(self.time_scale_array) - 2:
+                self.time_scale_index += 1
+                self.dT = self.dT_initial * self.time_scale_array[self.time_scale_index]
+                self.time_scale_counter = 5
+
+    def time_scale_counter_timer(self):
+        if self.time_scale_counter > 0:
+            self.time_scale_counter -= 1
+
 
 
 class Rocket:
     def __init__(self, screen):
-        """Target class constructor
-        """
         self.screen = screen
         self.height = 70
         self.coord_cm = 0  # растояние вверх от центра ракеты до центра масс

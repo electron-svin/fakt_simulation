@@ -15,7 +15,7 @@ def text_score(text, planet, rocket):
     planet.screen.blit(txt, (20, 30))
     txt = text.render('height: ' + f"{(rocket.x**2 + rocket.y**2)**0.5  - 6400_035:.{1}f}" + " м", True, (139, 0, 255))
     planet.screen.blit(txt, (20, 50))
-    txt = text.render('time_scale: ' + f"{(planet.dT / 0.03):.{1}f}", True,
+    txt = text.render('time_scale: ' + f"{(planet.time_scale_array[planet.time_scale_index]):.{1}f}", True,
                       (139, 0, 255))
     planet.screen.blit(txt, (20, 70))
 
@@ -58,6 +58,7 @@ def main():
         rocket.draw_fuel_tank()
         planet.scale(pygame.key.get_pressed())
         planet.time_scale(pygame.key.get_pressed())
+        planet.time_scale_counter_timer()
 
         text_score(text, planet, rocket)
         calculate_physical_time(planet)
