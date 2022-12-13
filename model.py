@@ -23,6 +23,7 @@ def calculate_acceleration(rocket, force_x, force_y):
     rocket.vx += (force_x / (rocket.shell_mass + rocket.fuel_mass)) * dt
     rocket.vy += (force_y / (rocket.shell_mass + rocket.fuel_mass)) * dt
 
+
 def calculate_thrust_force(rocket):
     """Возвращает массив из x- и y- составляющих силы реактивной тяги ракеты"""
     force_x, force_y = [0, 0]
@@ -96,7 +97,7 @@ def calculate_ellipse_param(rocket, obj, energy):
 def collision(planet, rocket):
     for point in rocket.collision_point:
         if (point[0] * math.cos(rocket.angle) + point[1] * math.sin(rocket.angle) + rocket.x) ** 2 + \
-                (point[1] * math.cos(rocket.angle) - point[0] * math.sin(rocket.angle) + rocket.y)**2 <= planet.r ** 2:
+                (point[1] * math.cos(rocket.angle) - point[0] * math.sin(rocket.angle) + rocket.y) ** 2 <= planet.r ** 2:
             normal_velocity = (rocket.vx * rocket.x + rocket.vy * rocket.y) / ((rocket.x ** 2 + rocket.y ** 2) ** 0.5)
             if normal_velocity <= 0:
                 rocket.vx -= normal_velocity * rocket.x / (rocket.x ** 2 + rocket.y ** 2) ** 0.5

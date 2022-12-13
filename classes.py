@@ -38,13 +38,13 @@ class Planet:
         self.time = 0
         self.dT = 0.06
         self.time_factor = 1
-        self.surface = pygame.Surface((1440, 720))
+        self.surface = pygame.Surface((WIDTH, HEIGHT))
 
     def draw(self, rocket):
 
         pygame.draw.circle(self.screen, self.color,
-                           (720 + (-rocket.x + self.x) * self.scale_factor,
-                            360 + (rocket.y - self.y) * self.scale_factor),
+                           (WIDTH / 2 + (-rocket.x + self.x) * self.scale_factor,
+                            HEIGHT / 2 + (rocket.y - self.y) * self.scale_factor),
                            self.r * self.scale_factor)
 
         
@@ -70,7 +70,7 @@ class Rocket:
         self.screen = screen
         self.height = 70
         self.coord_cm = 0  # растояние вверх от центра ракеты до центра масс
-        self.moment_of_inertia = 5*10**6  # момент инерции относительно центра масс
+        self.moment_of_inertia = 5 * 10 ** 6  # момент инерции относительно центра масс
         self.nozzle_angle = 0  # угол поворота сопла
         self.shell_mass = 5000
         self.max_fuel_mass = 20000
@@ -110,21 +110,24 @@ class Rocket:
     def draw(self, scale_factor):
         current_image = pygame.transform.scale(self.image, (int(self.height * scale_factor), int(self.height * scale_factor)))
         current_image = pygame.transform.rotate(current_image, self.angle * 180/3.14)
-        current_image_rect = current_image.get_rect(center=(720, 360))
+        current_image_rect = current_image.get_rect(center=(WIDTH / 2, HEIGHT / 2))
         self.screen.blit(current_image, current_image_rect)
 
         if self.show_information:
-            pygame.draw.line(self.screen, BLACK, [720, 360],
-                             [720 - 40 * math.sin(self.angle),
-                              360 - 40 * math.cos(self.angle)], 2)
-            pygame.draw.line(self.screen, RED, [720, 360],
-                             [720 + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
-                              360 + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
+            pygame.draw.line(self.screen, BLACK, [WIDTH / 2, HEIGHT / 2],
+                             [WIDTH / 2 - 40 * math.sin(self.angle),
+                              HEIGHT / 2 - 40 * math.cos(self.angle)], 2)
+            pygame.draw.line(self.screen, RED, [WIDTH / 2, HEIGHT / 2],
+                             [WIDTH / 2 + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
+                              HEIGHT / 2 + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
+            pygame.draw.line(self.screen, BLUE, [WIDTH / 2, HEIGHT / 2],
+                             [WIDTH / 2 + 20 * (self.vx / (self.vx ** 2 + self.vy ** 2) ** 0.5),
+                              HEIGHT / 2 - 20 * (self.vy / (self.vx ** 2 + self.vy ** 2) ** 0.5)], 2)
         
         for point in self.collision_point:
             pygame.draw.circle(self.screen, BLUE,
-                               (720 + (point[0] * math.cos(self.angle) + point[1] * math.sin(self.angle)) * scale_factor,
-            360 + (point[1] * math.cos(self.angle) - point[0] * math.sin(self.angle)) * scale_factor), 5)
+                               (WIDTH / 2 + (point[0] * math.cos(self.angle) + point[1] * math.sin(self.angle)) * scale_factor,
+                                HEIGHT / 2 + (point[1] * math.cos(self.angle) - point[0] * math.sin(self.angle)) * scale_factor), 5)
 
     def switch_engine(self, keys):
         """Включает/выключает двигатель при разовом нажатии на W/S"""
