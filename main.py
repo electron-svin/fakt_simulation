@@ -41,6 +41,12 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == 27:
                     finished = True
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                planet.move_screen("down", event)
+            elif event.type == pygame.MOUSEMOTION:
+                planet.move_screen("motion", event)
+            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                planet.move_screen("up", event)
 
         pygame.display.update()
 
@@ -50,15 +56,16 @@ def main():
         calculate_rocket(rocket, planet)
 
         screen.fill(WHITE)
-        planet.draw(rocket)
-        rocket.change_inf_mode(pygame.key.get_pressed())
-        rocket.change_info_timer_count()
+        planet.change_mode(pygame.key.get_pressed())
+        planet.change_mode_timer_count()
 
-        rocket.draw(planet.scale_factor)
+        planet.draw(rocket)
+        rocket.draw(planet)
         rocket.draw_fuel_tank()
-        planet.scale(pygame.key.get_pressed())
         planet.time_scale(pygame.key.get_pressed())
         planet.time_scale_counter_timer()
+        planet.time_scale_to_rocket_counter_timer()
+        planet.scale(pygame.key.get_pressed(), rocket)
 
         text_score(text, planet, rocket)
         calculate_physical_time(planet)

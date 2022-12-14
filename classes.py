@@ -1,11 +1,9 @@
 import math
 import pygame
-from pygame.draw import *
 
 FPS = 30
 WIDTH = 1440
 HEIGHT = 720
-GREY = 0x696969
 RED = 0xFF0000
 BLUE = 0x0000FF
 YELLOW = 0xFFC91F
@@ -15,6 +13,7 @@ CYAN = 0x00FFCC
 BLACK = (0, 0, 0)
 WHITE = 0xFFFFFF
 GREY = 0x7D7D7D
+BRIGHT_BLUE = (185, 237, 255)
 
 gravitational_constant = 6.67408E-11
 
@@ -41,24 +40,47 @@ class Planet:
         self.time_scale_counter = 0
         self.time_factor = 1
         self.time_scale_array = [1, 2, 3, 5, 10, 50, 100, 200, 500, 1000]
-        self.time_scale_index = 0
-        self.surface = pygame.Surface((WIDTH, HEIGHT))
+        self.time_scale_index = 1
+        self.r_atmosphere = 100_000
+        self.map_mode = False
+        self.change_mode_timer = 0
+        self.change_mode_key = pygame.K_q
+        self.scale_to_rocket = pygame.K_LSHIFT
+        self.color_atmosphere = BRIGHT_BLUE
+        self.start_position = (WIDTH / 2, HEIGHT / 2)
+        self.center_map = (WIDTH / 2, HEIGHT / 2)
+        self.mouse_pressed = False
+        self.time_scale_to_rocket_counter = 0
 
     def draw(self, rocket):
+        if self.map_mode:
+            pygame.draw.circle(self.screen, self.color, (self.center_map[0], self.center_map[1]), self.r * self.scale_factor)
+        else:
+            h = 720 - (290 - ((rocket.x ** 2 + rocket.y ** 2)**0.5 - self.r - rocket.height / 2) * 2)
+            if h < 720:
+                pygame.draw.polygon(self.screen, self.color, [[0, h], [1440, h], [1440, 720], [0, 720]])
 
-        pygame.draw.circle(self.screen, self.color,
-                           (WIDTH / 2 + (-rocket.x + self.x) * self.scale_factor,
-                            HEIGHT / 2 + (rocket.y - self.y) * self.scale_factor),
-                           self.r * self.scale_factor)
-
-        
-    def scale(self, keys):
-        if keys[self.up]:
+    def scale(self, keys, rocket):
+        if self.map_mode and keys[self.up]:
             self.scale_factor *= 1.05
-        if keys[self.down]:
+        if self.map_mode and keys[self.down]:
             self.scale_factor /= 1.05
-        if keys[self.local]:
-            self.scale_factor = 2
+        if self.time_scale_to_rocket_counter == 0 and self.map_mode and keys[self.scale_to_rocket]:
+            w = self.center_map[0]
+            h = self.center_map[1]
+            self.center_map = (1440 - w + rocket.x * self.scale_factor, 720 - h + rocket.y * self.scale_factor)
+            self.time_scale_to_rocket_counter = 15
+
+    def move_screen(self, action, event):
+        if action == "down":
+            self.start_position = event.pos
+            self.mouse_pressed = True
+        if self.mouse_pressed and action == 'motion':
+            change_position = event.rel
+            self.center_map = (self.center_map[0] + change_position[0],
+                               self.center_map[1] + change_position[1])
+        if action == "up":
+            self.mouse_pressed = False
 
     def time_scale(self, keys):
         if self.time_scale_counter == 0 and keys[self.left]:
@@ -76,6 +98,23 @@ class Planet:
         if self.time_scale_counter > 0:
             self.time_scale_counter -= 1
 
+    def time_scale_to_rocket_counter_timer(self):
+        if self.time_scale_to_rocket_counter > 0:
+            self.time_scale_to_rocket_counter -= 1
+
+    def change_mode(self, keys):
+        if self.change_mode_timer == 0 and keys[self.change_mode_key]:
+            self.map_mode = not self.map_mode
+            self.change_mode_timer = 10
+            if self.map_mode:
+                self.scale_factor = 45 * 10**-6
+                self.center_map = (WIDTH / 2, HEIGHT / 2)
+            else:
+                self.scale_factor = 2
+
+    def change_mode_timer_count(self):
+        if self.change_mode_timer > 0:
+            self.change_mode_timer -= 1
 
 
 class Rocket:
@@ -96,18 +135,16 @@ class Rocket:
         self.vy = 0
         self.omega = 0 # угловая скорость вращения против часовой стрелки
         self.x = 0
-        self.y = 6400000 + self.height / 2
+        self.y = 6400_000 + self.height / 2
         self.r = 30
         self.color = (160, 160, 180)
         self.left_key = pygame.K_a
         self.right_key = pygame.K_d
         self.up_key = pygame.K_w
         self.down_key = pygame.K_s
-        self.change_key = pygame.K_q
-        self.show_information = False
-        self.change_info_timer = 0
         self.image = pygame.image.load("picture\\rocket.png")
         self.collision_point = [(0, -35), (-24.75, 35), (24.75, 35)]
+        self.inside_atmosphere = True
 
     def draw_fuel_tank(self):
         """Визуализирует бак прямоугольником в правом нижнем углу"""
@@ -120,27 +157,26 @@ class Rocket:
         pygame.draw.rect(self.screen, BLACK, (WIDTH - width - 10, HEIGHT - height - 10, width, height))
         pygame.draw.rect(self.screen, color, (WIDTH - width - 10, HEIGHT - remainder - 10, width, remainder))
 
-    def draw(self, scale_factor):
-        current_image = pygame.transform.scale(self.image, (int(self.height * scale_factor), int(self.height * scale_factor)))
-        current_image = pygame.transform.rotate(current_image, self.angle * 180/3.14)
-        current_image_rect = current_image.get_rect(center=(WIDTH / 2, HEIGHT / 2))
-        self.screen.blit(current_image, current_image_rect)
-
-        if self.show_information:
-            pygame.draw.line(self.screen, BLACK, [WIDTH / 2, HEIGHT / 2],
-                             [WIDTH / 2 - 40 * math.sin(self.angle),
-                              HEIGHT / 2 - 40 * math.cos(self.angle)], 2)
-            pygame.draw.line(self.screen, RED, [WIDTH / 2, HEIGHT / 2],
-                             [WIDTH / 2 + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
-                              HEIGHT / 2 + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
-            pygame.draw.line(self.screen, BLUE, [WIDTH / 2, HEIGHT / 2],
-                             [WIDTH / 2 + 20 * (self.vx / (self.vx ** 2 + self.vy ** 2) ** 0.5),
-                              HEIGHT / 2 - 20 * (self.vy / (self.vx ** 2 + self.vy ** 2) ** 0.5)], 2)
-        
-        for point in self.collision_point:
-            pygame.draw.circle(self.screen, BLUE,
-                               (WIDTH / 2 + (point[0] * math.cos(self.angle) + point[1] * math.sin(self.angle)) * scale_factor,
-                                HEIGHT / 2 + (point[1] * math.cos(self.angle) - point[0] * math.sin(self.angle)) * scale_factor), 5)
+    def draw(self, planet):
+        if planet.map_mode:
+            w = planet.center_map[0]
+            h = planet.center_map[1]
+            coordinate_array = [w + self.x * planet.scale_factor, h - self.y * planet.scale_factor]
+            pygame.draw.line(self.screen, BLACK, coordinate_array,
+                             [coordinate_array[0] - 30 * math.sin(self.angle),
+                              coordinate_array[1] - 30 * math.cos(self.angle)], 2)
+            pygame.draw.line(self.screen, RED, coordinate_array,
+                             [coordinate_array[0] + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
+                              coordinate_array[1] + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
+            pygame.draw.line(self.screen, BLUE, coordinate_array,
+                             [coordinate_array[0] + 20 * (self.vx / (self.vx ** 2 + self.vy ** 2) ** 0.5),
+                              coordinate_array[1] - 20 * (self.vy / (self.vx ** 2 + self.vy ** 2) ** 0.5)], 2)
+        else:
+            current_image = pygame.transform.scale(self.image, (
+                int(self.height * planet.scale_factor), int(self.height * planet.scale_factor)))
+            current_image = pygame.transform.rotate(current_image, self.angle * 180 / 3.14)
+            current_image_rect = current_image.get_rect(center=(WIDTH / 2, HEIGHT / 2))
+            self.screen.blit(current_image, current_image_rect)
 
     def switch_engine(self, keys):
         """Включает/выключает двигатель при разовом нажатии на W/S"""
@@ -157,14 +193,31 @@ class Rocket:
         if keys[self.right_key]:
             self.nozzle_angle = 0.001
 
-    def change_inf_mode(self, keys):
-        if self.change_info_timer == 0 and keys[self.change_key]:
-            self.show_information = not(self.show_information)
-            self.change_info_timer = 10
+    def atmosphere_check(self, planet):
+        if self.inside_atmosphere and (self.x**2 + self.y**2) ** 0.5 > planet.r + 100000:
+            self.inside_atmosphere = False
+            print(1)
+        if not self.inside_atmosphere and (self.x**2 + self.y**2) ** 0.5 < planet.r + 90000:
+            if self.y != 0:
+                angle_between_oy_and_rocket = math.atan(self.x / self.y)
+            else:
+                if self.x > 0:
+                    angle_between_oy_and_rocket = math.asin(1)
+                else:
+                    angle_between_oy_and_rocket = math.asin(-1)
+            print(2)
+            self.x, self.y = basis_rotation(self.x, self.y, angle_between_oy_and_rocket)
+            self.vx, self.vy = basis_rotation(self.vx, self.vy, angle_between_oy_and_rocket)
+            self.inside_atmosphere = True
 
-    def change_info_timer_count(self):
-        if self.change_info_timer > 0:
-            self.change_info_timer -= 1
+    def near_planet(self, planet):
+        if (self.x ** 2 + self.y ** 2)**0.5 - planet.r <= 50:
+            return True
+        return False
+
+
+def basis_rotation(x, y, angle):
+    return x * math.cos(angle) - y * math.sin(angle), x * math.sin(angle) + y * math.cos(angle)
 
 
 if __name__ == "__main__":

@@ -95,6 +95,7 @@ def calculate_ellipse_param(rocket, obj, energy):
 
 
 def collision(planet, rocket):
+    count = 0
     for point in rocket.collision_point:
         if (point[0] * math.cos(rocket.angle) + point[1] * math.sin(rocket.angle) + rocket.x) ** 2 + \
                 (point[1] * math.cos(rocket.angle) - point[0] * math.sin(rocket.angle) + rocket.y) ** 2 <= planet.r ** 2:
@@ -104,9 +105,8 @@ def collision(planet, rocket):
                 rocket.vy -= normal_velocity * rocket.y / (rocket.x ** 2 + rocket.y ** 2) ** 0.5
                 rocket.vx /= 2
                 rocket.vy /= 2
-                rocket.omega = 0
-
-            break
+            count += 1
+            rocket.omega = 0
 
 
 if __name__ == "__main__":
