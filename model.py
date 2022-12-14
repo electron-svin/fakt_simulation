@@ -5,6 +5,14 @@ gravitational_constant = 6.67408E-11
 planet_mass = 5.9742E24
 R_planet = 6371
 dt = 0.01
+pho_air_0 = 1.225
+rocket_form_constant = 0.5
+g = 9.8
+R = 8.31
+temperature_gradient = -0.0065
+molar_mass_of_air = 0.02896
+temperature = 273
+pi = 3.14
 
 
 def calculate_gravity(rocket, obj):
@@ -39,7 +47,8 @@ def waste_fuel(rocket):
         rocket.fuel_mass -= rocket.mu * dt
     if rocket.fuel_mass <= 0:
         rocket.engine_on = False
-    
+
+
 def calculate_moment_of_inertia(rocket):
     rocket.moment_of_inertia = (rocket.shell_mass + rocket.fuel_mass) * (rocket.height ** 2 / 4 + rocket.coord_cm ** 2) / 6
 
@@ -69,12 +78,30 @@ def calculate_rocket(rocket, planet):
             thrust_force_x, thrust_force_y = calculate_thrust_force(rocket)
             waste_fuel(rocket)
         gravity_force_x, gravity_force_y = calculate_gravity(rocket, planet)
+        air_force_x, air_force_y = air_resistance_force(rocket, planet)
 
-        calculate_acceleration(rocket, gravity_force_x + thrust_force_x, gravity_force_y + thrust_force_y)
+        calculate_acceleration(rocket, gravity_force_x + thrust_force_x + air_force_x, gravity_force_y + thrust_force_y + air_force_y)
         calculate_moment_of_inertia(rocket)
         collision(planet, rocket)
         calculate_angular_acceleration(rocket)
         move(rocket)
+
+
+def air_resistance_force(rocket, planet):
+    height = (rocket.x ** 2 + rocket.y ** 2) ** 0.5 - planet.r
+    if height > planet.air_force_height:
+        return 0, 0
+    pho_air = pho_air_0 * (1 + temperature_gradient * height / temperature) ** (-g * molar_mass_of_air / (R * temperature_gradient))
+    print(pho_air )
+    air_force = pho_air * (rocket.vx ** 2 + rocket.vy ** 2) * rocket_form_constant * pi * (rocket.radius ** 2)
+    v = (rocket.vx ** 2 + rocket.vy ** 2) ** 0.5
+    if v != 0:
+        air_force_x = - air_force * rocket.vx / v
+        air_force_y = - air_force * rocket.vy / v
+    else:
+        air_force_x = 0
+        air_force_y = 0
+    return air_force_x, air_force_y
 
 
 def calculate_energy(rocket, obj):

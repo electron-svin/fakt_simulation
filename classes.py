@@ -26,8 +26,7 @@ class Planet:
         self.mass = 5.9742E24
         self.x = 0
         self.y = 0
-        self.r = 6400 * 10 ** 3
-        self.interaction_r = 6400 * 10 ** 6
+        self.r = 6371 * 10 ** 3
         self.color = GREEN
         self.scale_factor = 2
         self.up = pygame.K_UP
@@ -53,6 +52,7 @@ class Planet:
         self.mouse_pressed = False
         self.time_scale_to_rocket_counter = 0
         self.image_stars = pygame.image.load("picture\\stars.jpg")
+        self.air_force_height = 40_000
 
     def draw(self, rocket):
         if self.map_mode:
@@ -128,21 +128,22 @@ class Rocket:
     def __init__(self, screen):
         self.screen = screen
         self.height = 70
+        self.radius = 1.5
         self.coord_cm = 0  # растояние вверх от центра ракеты до центра масс
         self.moment_of_inertia = 5 * 10 ** 6  # момент инерции относительно центра масс
         self.nozzle_angle = 0  # угол поворота сопла
-        self.shell_mass = 5000
-        self.max_fuel_mass = 20000
+        self.shell_mass = 30_000
+        self.max_fuel_mass = 270_000
         self.fuel_mass = self.max_fuel_mass
         self.engine_on = False
-        self.mu = 400
+        self.mu = 1000
         self.u = 4000
         self.angle = 0  # угол с вертикалью, положителен обход против часовой стрелки
         self.vx = 0
         self.vy = 0
         self.omega = 0 # угловая скорость вращения против часовой стрелки
         self.x = 0
-        self.y = 6400_000 + self.height / 2
+        self.y = 6371_000 + self.height / 2
         self.r = 30
         self.color = (160, 160, 180)
         self.left_key = pygame.K_a
@@ -178,9 +179,6 @@ class Rocket:
             pygame.draw.line(self.screen, RED, coordinate_array,
                             [coordinate_array[0] + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
                              coordinate_array[1] + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
-            #pygame.draw.line(self.screen, BLUE, coordinate_array,
-             #               [coordinate_array[0] + 20 * (self.vx / (self.vx ** 2 + self.vy ** 2) ** 0.5),
-              #              coordinate_array[1] - 20 * (self.vy / (self.vx ** 2 + self.vy ** 2) ** 0.5)], 2)
         else:
             current_image = pygame.transform.scale(self.image_rocket, (
                 int(self.height * planet.scale_factor), int(self.height * planet.scale_factor)))
