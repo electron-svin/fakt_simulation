@@ -92,7 +92,6 @@ def air_resistance_force(rocket, planet):
     if height > planet.air_force_height:
         return 0, 0
     pho_air = pho_air_0 * (1 + temperature_gradient * height / temperature) ** (-g * molar_mass_of_air / (R * temperature_gradient))
-    print(pho_air )
     air_force = pho_air * (rocket.vx ** 2 + rocket.vy ** 2) * rocket_form_constant * pi * (rocket.radius ** 2)
     v = (rocket.vx ** 2 + rocket.vy ** 2) ** 0.5
     if v != 0:

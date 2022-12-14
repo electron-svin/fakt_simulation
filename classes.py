@@ -2,8 +2,6 @@ import math
 import pygame
 
 FPS = 30
-WIDTH = 1440
-HEIGHT = 720
 RED = 0xFF0000
 BLUE = 0x0000FF
 YELLOW = 0xFFC91F
@@ -21,7 +19,9 @@ gravitational_constant = 6.67408E-11
 
 class Planet:
 
-    def __init__(self, screen):
+    def __init__(self, screen, WIDTH, HEIGHT):
+        self.WIDTH = WIDTH
+        self.HEIGHT = HEIGHT
         self.screen = screen
         self.mass = 5.9742E24
         self.x = 0
@@ -63,9 +63,9 @@ class Planet:
                 self.screen.fill(BRIGHT_BLUE)
             else:
                 self.screen.blit(self.image_stars, (0, 0))
-            h = 720 - (290 - ((rocket.x ** 2 + rocket.y ** 2) ** 0.5 - self.r - rocket.height / 2) * 2)
-            if h < 720:
-                pygame.draw.polygon(self.screen, self.color, [[0, h], [1440, h], [1440, 720], [0, 720]])
+            h = self.HEIGHT / 2 - (((rocket.x ** 2 + rocket.y ** 2) ** 0.5 - self.r) * self.scale_factor)
+            if h > 0:
+                pygame.draw.polygon(self.screen, self.color, [[0, self.HEIGHT - h], [self.WIDTH, self.HEIGHT - h], [self.WIDTH, self.HEIGHT], [0, self.HEIGHT]])
 
     def scale(self, keys, rocket):
         if self.map_mode and keys[self.up]:
@@ -73,9 +73,8 @@ class Planet:
         if self.map_mode and keys[self.down]:
             self.scale_factor /= 1.05
         if self.time_scale_to_rocket_counter == 0 and self.map_mode and keys[self.scale_to_rocket]:
-            w = self.center_map[0]
-            h = self.center_map[1]
-            self.center_map = (1440 - w + rocket.x * self.scale_factor, 720 - h + rocket.y * self.scale_factor)
+            self.scale_factor = 10**-4
+            self.center_map = (self.WIDTH / 2 - rocket.x * self.scale_factor, self.HEIGHT / 2 + rocket.y * self.scale_factor)
             self.time_scale_to_rocket_counter = 15
 
     def move_screen(self, action, event):
@@ -115,7 +114,7 @@ class Planet:
             self.change_mode_timer = 10
             if self.map_mode:
                 self.scale_factor = 45 * 10**-6
-                self.center_map = (WIDTH / 2, HEIGHT / 2)
+                self.center_map = (self.WIDTH / 2, self.HEIGHT / 2)
             else:
                 self.scale_factor = 2
 
@@ -125,7 +124,9 @@ class Planet:
 
 
 class Rocket:
-    def __init__(self, screen):
+    def __init__(self, screen, WIDTH, HEIGHT):
+        self.WIDTH = WIDTH
+        self.HEIGHT = HEIGHT
         self.screen = screen
         self.height = 70
         self.radius = 1.5
@@ -154,6 +155,9 @@ class Rocket:
         self.image_mark = pygame.image.load("picture\\rocket_mark.png")
         self.collision_point = [(0, -35), (-24.75, 35), (24.75, 35)]
         self.inside_atmosphere = True
+        self.flame_animation_file = "picture\\flame\\flame_"
+        self.flame_animation_count = 0
+        self.number_of_flame_animation = 12
 
     def draw_fuel_tank(self):
         """Визуализирует бак прямоугольником в правом нижнем углу"""
@@ -163,8 +167,8 @@ class Rocket:
         if self.fuel_mass > 0:
             color = (200 * (1 - self.fuel_mass / self.max_fuel_mass), 200 * (self.fuel_mass / self.max_fuel_mass), 0)
         remainder = height / self.max_fuel_mass * self.fuel_mass
-        pygame.draw.rect(self.screen, BLACK, (WIDTH - width - 10, HEIGHT - height - 10, width, height))
-        pygame.draw.rect(self.screen, color, (WIDTH - width - 10, HEIGHT - remainder - 10, width, remainder))
+        pygame.draw.rect(self.screen, BLACK, (self.WIDTH - width - 10, self.HEIGHT - height - 10, width, height))
+        pygame.draw.rect(self.screen, color, (self.WIDTH - width - 10, self.HEIGHT - remainder - 10, width, remainder))
 
     def draw(self, planet):
         if planet.map_mode:
@@ -180,10 +184,22 @@ class Rocket:
                             [coordinate_array[0] + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
                              coordinate_array[1] + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
         else:
+            if self.engine_on:
+                number = int(self.flame_animation_count)
+                animation_image = pygame.image.load(self.flame_animation_file + str(number) + ".png", )
+                animation_image = pygame.transform.scale(animation_image, (200, 200))
+                animation_image = pygame.transform.rotate(animation_image, self.angle * 180 / 3.14 + 180)
+                x, y = basis_rotation(2, 110, -self.angle)
+                animation_image_rect = animation_image.get_rect(center=(self.WIDTH / 2 + x, self.HEIGHT / 2 + y))
+                self.screen.blit(animation_image, animation_image_rect)
+                self.flame_animation_count += 0.5
+                if self.flame_animation_count > self.number_of_flame_animation - 1:
+                    self.flame_animation_count = 0
+
             current_image = pygame.transform.scale(self.image_rocket, (
                 int(self.height * planet.scale_factor), int(self.height * planet.scale_factor)))
             current_image = pygame.transform.rotate(current_image, self.angle * 180 / 3.14)
-            current_image_rect = current_image.get_rect(center=(WIDTH / 2, HEIGHT / 2))
+            current_image_rect = current_image.get_rect(center=(self.WIDTH / 2, self.HEIGHT / 2))
             self.screen.blit(current_image, current_image_rect)
 
     def switch_engine(self, keys):

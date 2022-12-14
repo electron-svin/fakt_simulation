@@ -1,13 +1,7 @@
-import pygame
-from pygame.draw import *
-
 from model import *
 from classes import *
 
 FPS = 60
-
-WIDTH = 1440
-HEIGHT = 720
 
 
 def text_score(text, planet, rocket):
@@ -26,13 +20,16 @@ def text_score(text, planet, rocket):
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    info_object = pygame.display.Info()
+    width = info_object.current_w
+    height = info_object.current_h
+    screen = pygame.display.set_mode((width, height))
     clock = pygame.time.Clock()
     text = pygame.font.Font(None, 24)
     finished = False
 
-    rocket = Rocket(screen)
-    planet = Planet(screen)
+    rocket = Rocket(screen, width, height)
+    planet = Planet(screen, width, height)
 
     while not finished:
 
