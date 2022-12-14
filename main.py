@@ -55,7 +55,7 @@ def main():
 
         calculate_rocket(rocket, planet)
 
-        screen.fill(WHITE)
+        screen.fill(COSMIC)
         planet.change_mode(pygame.key.get_pressed())
         planet.change_mode_timer_count()
 

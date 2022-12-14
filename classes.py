@@ -14,6 +14,7 @@ BLACK = (0, 0, 0)
 WHITE = 0xFFFFFF
 GREY = 0x7D7D7D
 BRIGHT_BLUE = (185, 237, 255)
+COSMIC = (23, 23, 23)
 
 gravitational_constant = 6.67408E-11
 
@@ -51,12 +52,18 @@ class Planet:
         self.center_map = (WIDTH / 2, HEIGHT / 2)
         self.mouse_pressed = False
         self.time_scale_to_rocket_counter = 0
+        self.image_stars = pygame.image.load("picture\\stars.jpg")
 
     def draw(self, rocket):
         if self.map_mode:
+            pygame.draw.circle(self.screen, self.color_atmosphere, (self.center_map[0], self.center_map[1]), (self.r + self.r_atmosphere) * self.scale_factor)
             pygame.draw.circle(self.screen, self.color, (self.center_map[0], self.center_map[1]), self.r * self.scale_factor)
         else:
-            h = 720 - (290 - ((rocket.x ** 2 + rocket.y ** 2)**0.5 - self.r - rocket.height / 2) * 2)
+            if rocket.x ** 2 + rocket.y ** 2 < (self.r + self.r_atmosphere)**2:
+                self.screen.fill(BRIGHT_BLUE)
+            else:
+                self.screen.blit(self.image_stars, (0, 0))
+            h = 720 - (290 - ((rocket.x ** 2 + rocket.y ** 2) ** 0.5 - self.r - rocket.height / 2) * 2)
             if h < 720:
                 pygame.draw.polygon(self.screen, self.color, [[0, h], [1440, h], [1440, 720], [0, 720]])
 
@@ -142,7 +149,8 @@ class Rocket:
         self.right_key = pygame.K_d
         self.up_key = pygame.K_w
         self.down_key = pygame.K_s
-        self.image = pygame.image.load("picture\\rocket.png")
+        self.image_rocket = pygame.image.load("picture\\rocket.png")
+        self.image_mark = pygame.image.load("picture\\rocket_mark.png")
         self.collision_point = [(0, -35), (-24.75, 35), (24.75, 35)]
         self.inside_atmosphere = True
 
@@ -161,18 +169,20 @@ class Rocket:
         if planet.map_mode:
             w = planet.center_map[0]
             h = planet.center_map[1]
-            coordinate_array = [w + self.x * planet.scale_factor, h - self.y * planet.scale_factor]
-            pygame.draw.line(self.screen, BLACK, coordinate_array,
-                             [coordinate_array[0] - 30 * math.sin(self.angle),
-                              coordinate_array[1] - 30 * math.cos(self.angle)], 2)
+            coordinate_array = (w + self.x * planet.scale_factor, h - self.y * planet.scale_factor)
+            current_mark_image = pygame.transform.scale(self.image_mark, (
+                15, 20))
+            current_mark_image = pygame.transform.rotate(current_mark_image, self.angle * 180 / 3.14)
+            current_mark_rect = current_mark_image.get_rect(center= coordinate_array)
+            self.screen.blit(current_mark_image, current_mark_rect)
             pygame.draw.line(self.screen, RED, coordinate_array,
-                             [coordinate_array[0] + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
-                              coordinate_array[1] + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
-            pygame.draw.line(self.screen, BLUE, coordinate_array,
-                             [coordinate_array[0] + 20 * (self.vx / (self.vx ** 2 + self.vy ** 2) ** 0.5),
-                              coordinate_array[1] - 20 * (self.vy / (self.vx ** 2 + self.vy ** 2) ** 0.5)], 2)
+                            [coordinate_array[0] + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
+                             coordinate_array[1] + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
+            #pygame.draw.line(self.screen, BLUE, coordinate_array,
+             #               [coordinate_array[0] + 20 * (self.vx / (self.vx ** 2 + self.vy ** 2) ** 0.5),
+              #              coordinate_array[1] - 20 * (self.vy / (self.vx ** 2 + self.vy ** 2) ** 0.5)], 2)
         else:
-            current_image = pygame.transform.scale(self.image, (
+            current_image = pygame.transform.scale(self.image_rocket, (
                 int(self.height * planet.scale_factor), int(self.height * planet.scale_factor)))
             current_image = pygame.transform.rotate(current_image, self.angle * 180 / 3.14)
             current_image_rect = current_image.get_rect(center=(WIDTH / 2, HEIGHT / 2))
@@ -209,11 +219,6 @@ class Rocket:
             self.x, self.y = basis_rotation(self.x, self.y, angle_between_oy_and_rocket)
             self.vx, self.vy = basis_rotation(self.vx, self.vy, angle_between_oy_and_rocket)
             self.inside_atmosphere = True
-
-    def near_planet(self, planet):
-        if (self.x ** 2 + self.y ** 2)**0.5 - planet.r <= 50:
-            return True
-        return False
 
 
 def basis_rotation(x, y, angle):
