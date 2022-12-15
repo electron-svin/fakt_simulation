@@ -130,7 +130,6 @@ class Rocket:
         self.screen = screen
         self.height = 70
         self.radius = 1.5
-        self.coord_cm = 0  # растояние вверх от центра ракеты до центра масс
         self.moment_of_inertia = 5 * 10 ** 6  # момент инерции относительно центра масс
         self.nozzle_angle = 0  # угол поворота сопла
         self.shell_mass = 30_000
@@ -239,23 +238,6 @@ class Rocket:
             self.nozzle_angle = - 0.001
         if keys[self.right_key]:
             self.nozzle_angle = 0.001
-
-    def atmosphere_check(self, planet):
-        if self.inside_atmosphere and (self.x**2 + self.y**2) ** 0.5 > planet.r + 100000:
-            self.inside_atmosphere = False
-            print(1)
-        if not self.inside_atmosphere and (self.x**2 + self.y**2) ** 0.5 < planet.r + 90000:
-            if self.y != 0:
-                angle_between_oy_and_rocket = math.atan(self.x / self.y)
-            else:
-                if self.x > 0:
-                    angle_between_oy_and_rocket = math.asin(1)
-                else:
-                    angle_between_oy_and_rocket = math.asin(-1)
-            print(2)
-            self.x, self.y = basis_rotation(self.x, self.y, angle_between_oy_and_rocket)
-            self.vx, self.vy = basis_rotation(self.vx, self.vy, angle_between_oy_and_rocket)
-            self.inside_atmosphere = True
 
 
 def basis_rotation(x, y, angle):
