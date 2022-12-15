@@ -115,9 +115,18 @@ def calculate_energy(rocket, obj):
 
 def calculate_ellipse_param(rocket, obj, energy):
     """Просчитывает параметры эллипса и возвращает их"""
+    distance = ((rocket.x - obj.x) ** 2 + (rocket.y - obj.y) ** 2)
+    v_r = (rocket.vx * rocket.x) + (rocket.vy * rocket.y) / distance
+    v_phi = ((rocket.vx ** 2 + rocket.vy ** 2) ** 2 - v_r ** 2) ** 0.5
+    l_0 = v_phi * distance
     a = - gravitational_constant * (rocket.shell_mass + rocket.fuel_mass) * obj.mass / energy
-    b = 10 #чуть позже
-    return a, b
+    b = l_0 / (-2 * energy / (rocket.shell_mass + rocket.fuel_mass)) ** 0.5
+    c = (a ** 2 - b ** 2) ** 0.5
+    x_0 = a * (distance - a) / (a ** 2 - b ** 2) ** 0.5
+    phi = math.pi - math.acos((x_0 + c) / distance)
+    psi = math.atan((distance * math.sin(phi)) / x_0)
+
+    return a, b, psi
 
 
 def collision(planet, rocket):
