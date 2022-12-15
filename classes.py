@@ -274,10 +274,12 @@ class Menu:
                                 [self.center[0] + self.button_width, self.center[1] - self.button_height],
                                 [self.center[0] - self.button_width, self.center[1]],
                                 [self.center[0] + self.button_width, self.center[1]]]
+        self.tutorial_button_active = False
         self.authors_button = [[self.center[0] - self.button_width, self.center[1] - 0],
                                [self.center[0] + self.button_width, self.center[1] - 0],
                                [self.center[0] - self.button_width, self.center[1] + self.button_height],
                                [self.center[0] + self.button_width, self.center[1] + self.button_height]]
+        self.authors_button_active = False
         self.quit_button = [[self.center[0] - self.button_width, self.center[1] + self.button_height],
                             [self.center[0] + self.button_width, self.center[1] + self.button_height],
                             [self.center[0] - self.button_width, self.center[1] + 2 * self.button_height],
@@ -299,10 +301,13 @@ class Menu:
         return roc
 
     def tutorial(self):
-        pygame.draw.rect(self.screen, COSMIC, (self.center[0] - 40, self.center[1] - 60, 80, 120))
+        if self.tutorial_button_active:
+            pygame.draw.rect(self.screen, COSMIC, (self.center[0] - 40, self.center[1] - 60, 80, 120))
 
     def authors(self):
-        pygame.draw.rect(self.screen, COSMIC, (self.center[0] - 40, self.center[1] - 60, 80, 120))
+        if self.authors_button_active:
+            pygame.draw.rect(self.screen, COSMIC, (self.center[0] - 40, self.center[1] - 60, 80, 120))
+
     def quit(self):
         return True
 

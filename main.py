@@ -23,7 +23,7 @@ def main():
     info_object = pygame.display.Info()
     width = info_object.current_w
     height = info_object.current_h
-    screen = pygame.display.set_mode((1200, 900))
+    screen = pygame.display.set_mode((width, height))
     clock = pygame.time.Clock()
     text = pygame.font.Font(None, 24)
     finished = False
@@ -41,7 +41,7 @@ def main():
                 screen.fill(COSMIC)
                 menu.draw()
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    print(event.pos)
+
                     if (menu.play_button[0][0] < event.pos[0]) and (event.pos[0] < menu.play_button[3][0]) and \
                             (menu.play_button[0][1] < event.pos[1]) and (event.pos[1] < menu.play_button[3][1]):
                         rocket = menu.play
@@ -50,17 +50,24 @@ def main():
                             event.pos[0] < menu.tutorial_button[3][0]) and \
                             (menu.tutorial_button[0][1] < event.pos[1]) and (
                             event.pos[1] < menu.tutorial_button[3][1]):
-                        menu.tutorial()
+                        menu.tutorial_button_active = True
+
 
                     elif (menu.authors_button[0][0] < event.pos[0]) and (
                             event.pos[0] < menu.authors_button[3][0]) and \
                             (menu.authors_button[0][1] < event.pos[1]) and (
                             event.pos[1] < menu.authors_button[3][1]):
-                        menu.authors()
+                        menu.authors_button_active = True
 
-                    elif (menu.quit_button[0][0] < event.pos[0]) and (event.pos[0] < menu.quit_button[3, 0]) and \
+                    elif (menu.quit_button[0][0] < event.pos[0]) and (event.pos[0] < menu.quit_button[3][0]) and \
                             (menu.quit_button[0][1] < event.pos[1]) and (event.pos[1] < menu.quit_button[3][1]):
                         finished = True
+
+                if (event.type == pygame.KEYDOWN) and (event.key == 27):
+                    menu.authors_button_active = False
+                    menu.tutorial_button_active = False
+                menu.tutorial()
+                menu.authors()
 
             if event.type == pygame.QUIT:
                 finished = True
