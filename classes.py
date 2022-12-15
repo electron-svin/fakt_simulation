@@ -123,14 +123,13 @@ class Planet:
             self.change_mode_timer -= 1
 
 
-class Rocket:
+class Stage:
     def __init__(self, screen, WIDTH, HEIGHT):
         self.WIDTH = WIDTH
         self.HEIGHT = HEIGHT
         self.screen = screen
         self.height = 70
         self.radius = 1.5
-        self.coord_cm = 0  # растояние вверх от центра ракеты до центра масс
         self.moment_of_inertia = 5 * 10 ** 6  # момент инерции относительно центра масс
         self.nozzle_angle = 0  # угол поворота сопла
         self.shell_mass = 30_000
@@ -145,13 +144,7 @@ class Rocket:
         self.omega = 0 # угловая скорость вращения против часовой стрелки
         self.x = 0
         self.y = 6371_000 + self.height / 2
-        self.r = 30
-        self.color = (160, 160, 180)
-        self.left_key = pygame.K_a
-        self.right_key = pygame.K_d
-        self.up_key = pygame.K_w
-        self.down_key = pygame.K_s
-        self.image_rocket = pygame.image.load("picture\\rocket.png")
+        self.image_rocket = pygame.image.load("picture\\saturn_v_stage_1.png")
         self.image_mark = pygame.image.load("picture\\rocket_mark.png")
         self.collision_point = [(0, -35), (-24.75, 35), (24.75, 35)]
         self.inside_atmosphere = True
@@ -165,17 +158,6 @@ class Rocket:
         self.explosion_now = False
         self.x_explosion_point = 0
         self.y_explosion_point = 0
-
-    def draw_fuel_tank(self):
-        """Визуализирует бак прямоугольником в правом нижнем углу"""
-        height = 200
-        width = 40
-        color = BLACK
-        if self.fuel_mass > 0:
-            color = (200 * (1 - self.fuel_mass / self.max_fuel_mass), 200 * (self.fuel_mass / self.max_fuel_mass), 0)
-        remainder = height / self.max_fuel_mass * self.fuel_mass
-        pygame.draw.rect(self.screen, BLACK, (self.WIDTH - width - 10, self.HEIGHT - height - 10, width, height))
-        pygame.draw.rect(self.screen, color, (self.WIDTH - width - 10, self.HEIGHT - remainder - 10, width, remainder))
 
     def explosion_start(self, x_point_collision, y_point_collision):
         if not self.dead:
@@ -194,18 +176,18 @@ class Rocket:
             self.explosion_animation_count += 0.5
 
     def draw(self, planet):
-        if not self.dead and planet.map_mode:
+        '''if not self.dead and planet.map_mode:
             w = planet.center_map[0]
             h = planet.center_map[1]
             coordinate_array = (w + self.x * planet.scale_factor, h - self.y * planet.scale_factor)
             current_mark_image = pygame.transform.scale(self.image_mark, (
                 15, 20))
             current_mark_image = pygame.transform.rotate(current_mark_image, self.angle * 180 / 3.14)
-            current_mark_rect = current_mark_image.get_rect(center= coordinate_array)
+            current_mark_rect = current_mark_image.get_rect(center=coordinate_array)
             self.screen.blit(current_mark_image, current_mark_rect)
             pygame.draw.line(self.screen, RED, coordinate_array,
-                            [coordinate_array[0] + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
-                             coordinate_array[1] + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
+                             [coordinate_array[0] + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
+                              coordinate_array[1] + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)'''
         elif not self.dead:
             if self.engine_on and self.fuel_mass > 0:
                 number = int(self.flame_animation_count)
@@ -225,6 +207,79 @@ class Rocket:
             current_image_rect = current_image.get_rect(center=(self.WIDTH / 2, self.HEIGHT / 2))
             self.screen.blit(current_image, current_image_rect)
 
+class Rocket:
+    def __init__(self, screen, WIDTH, HEIGHT):
+        self.WIDTH = WIDTH
+        self.HEIGHT = HEIGHT
+        self.screen = screen
+        self.moment_of_inertia = 5 * 10 ** 6  # момент инерции относительно центра масс
+        self.nozzle_angle = 0  # угол поворота сопла
+        self.shell_mass = 30_000
+        self.max_fuel_mass = 270_000
+        self.fuel_mass = self.max_fuel_mass
+        self.engine_on = False
+        self.mu = 1000
+        self.u = 4000
+        self.left_key = pygame.K_a
+        self.right_key = pygame.K_d
+        self.up_key = pygame.K_w
+        self.down_key = pygame.K_s
+        self.radius = 1.5
+        self.stages = [Stage(self.screen, self.WIDTH, self.HEIGHT)]
+        self.height = 70
+        self.rocket_surface = pygame.Surface((140, 140))
+        self.angle = 0  # угол с вертикалью, положителен обход против часовой стрелки
+        self.vx = 0
+        self.vy = 0
+        self.omega = 0  # угловая скорость вращения против часовой стрелки
+        self.x = 0
+        self.y = 6371_000 + self.height / 2
+        self.dead = False
+
+    def draw_fuel_tank(self):
+        """Визуализирует бак прямоугольником в правом нижнем углу"""
+        height = 200
+        width = 40
+        color = BLACK
+        if self.fuel_mass > 0:
+            color = (200 * (1 - self.fuel_mass / self.max_fuel_mass), 200 * (self.fuel_mass / self.max_fuel_mass), 0)
+        remainder = height / self.max_fuel_mass * self.fuel_mass
+        pygame.draw.rect(self.screen, BLACK, (self.WIDTH - width - 10, self.HEIGHT - height - 10, width, height))
+        pygame.draw.rect(self.screen, color, (self.WIDTH - width - 10, self.HEIGHT - remainder - 10, width, remainder))
+
+    def draw(self, planet):
+        if not self.dead and planet.map_mode:
+            w = planet.center_map[0]
+            h = planet.center_map[1]
+            coordinate_array = (w + self.x * planet.scale_factor, h - self.y * planet.scale_factor)
+            current_mark_image = pygame.transform.scale(self.image_mark, (
+                15, 20))
+            current_mark_image = pygame.transform.rotate(current_mark_image, self.angle * 180 / 3.14)
+            current_mark_rect = current_mark_image.get_rect(center=coordinate_array)
+            self.screen.blit(current_mark_image, current_mark_rect)
+            pygame.draw.line(self.screen, RED, coordinate_array,
+                             [coordinate_array[0] + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
+                              coordinate_array[1] + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
+        elif not self.dead:
+            '''if self.engine_on and self.fuel_mass > 0:
+                number = int(self.flame_animation_count)
+                animation_image = pygame.image.load(self.flame_animation_file + str(number) + ".png", )
+                animation_image = pygame.transform.scale(animation_image, (200, 200))
+                animation_image = pygame.transform.rotate(animation_image, self.angle * 180 / 3.14 + 180)
+                x, y = basis_rotation(2, 110, -self.angle)
+                animation_image_rect = animation_image.get_rect(center=(self.WIDTH / 2 + x, self.HEIGHT / 2 + y))
+                self.screen.blit(animation_image, animation_image_rect)
+                self.flame_animation_count += 0.5
+                if self.flame_animation_count > self.number_of_flame_animation - 1:
+                    self.flame_animation_count = 0'''
+
+            current_rocket_surface = pygame.transform.scale(self.rocket_surface, (
+                self.height * planet.scale_factor, self.height * planet.scale_factor))
+            current_rocket_surface = pygame.transform.rotate(current_rocket_surface, self.angle * 180 / 3.14)
+            current_rocket_surface_rect = current_rocket_surface.get_rect(center=(self.WIDTH / 2, self.HEIGHT / 2))
+
+            self.screen.blit(current_rocket_surface, current_rocket_surface_rect)
+
     def switch_engine(self, keys):
         """Включает/выключает двигатель при разовом нажатии на W/S"""
         if keys[self.up_key]:
@@ -239,23 +294,6 @@ class Rocket:
             self.nozzle_angle = - 0.001
         if keys[self.right_key]:
             self.nozzle_angle = 0.001
-
-    def atmosphere_check(self, planet):
-        if self.inside_atmosphere and (self.x**2 + self.y**2) ** 0.5 > planet.r + 100000:
-            self.inside_atmosphere = False
-            print(1)
-        if not self.inside_atmosphere and (self.x**2 + self.y**2) ** 0.5 < planet.r + 90000:
-            if self.y != 0:
-                angle_between_oy_and_rocket = math.atan(self.x / self.y)
-            else:
-                if self.x > 0:
-                    angle_between_oy_and_rocket = math.asin(1)
-                else:
-                    angle_between_oy_and_rocket = math.asin(-1)
-            print(2)
-            self.x, self.y = basis_rotation(self.x, self.y, angle_between_oy_and_rocket)
-            self.vx, self.vy = basis_rotation(self.vx, self.vy, angle_between_oy_and_rocket)
-            self.inside_atmosphere = True
 
 
 def basis_rotation(x, y, angle):
