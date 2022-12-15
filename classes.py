@@ -241,6 +241,7 @@ class Rocket:
             self.nozzle_angle = 0.001
 
     def atmosphere_check(self, planet):
+        "Проверяет, находится ли ракета в атмосфере"
         if self.inside_atmosphere and (self.x**2 + self.y**2) ** 0.5 > planet.r + 100000:
             self.inside_atmosphere = False
             print(1)
@@ -256,6 +257,54 @@ class Rocket:
             self.x, self.y = basis_rotation(self.x, self.y, angle_between_oy_and_rocket)
             self.vx, self.vy = basis_rotation(self.vx, self.vy, angle_between_oy_and_rocket)
             self.inside_atmosphere = True
+
+
+class Menu:
+    def __init__(self, screen, WIDTH, HEIGHT):
+        self.screen = screen
+        self.active = False
+        self.button_width = 100
+        self.button_height = 40
+        self.center = [int(WIDTH / 2), int(HEIGHT / 2)]
+        self.play_button = [[self.center[0] - self.button_width, self.center[1] - 2 * self.button_height],
+                            [self.center[0] + self.button_width, self.center[1] - 2 * self.button_height],
+                            [self.center[0] - self.button_width, self.center[1] - self.button_height],
+                            [self.center[0] + self.button_width, self.center[1] - self.button_height]]
+        self.tutorial_button = [[self.center[0] - self.button_width, self.center[1] - self.button_height],
+                                [self.center[0] + self.button_width, self.center[1] - self.button_height],
+                                [self.center[0] - self.button_width, self.center[1]],
+                                [self.center[0] + self.button_width, self.center[1]]]
+        self.authors_button = [[self.center[0] - self.button_width, self.center[1] - 0],
+                               [self.center[0] + self.button_width, self.center[1] - 0],
+                               [self.center[0] - self.button_width, self.center[1] + self.button_height],
+                               [self.center[0] + self.button_width, self.center[1] + self.button_height]]
+        self.quit_button = [[self.center[0] - self.button_width, self.center[1] + self.button_height],
+                            [self.center[0] + self.button_width, self.center[1] + self.button_height],
+                            [self.center[0] - self.button_width, self.center[1] + 2 * self.button_height],
+                            [self.center[0] + self.button_width, self.center[1] + 2 * self.button_height]]
+
+    def draw(self):
+        x, y = self.play_button[0]
+        pygame.draw.rect(self.screen, RED, (x, y, 2 * self.button_width, self.button_height))
+        x, y = self.tutorial_button[0]
+        pygame.draw.rect(self.screen, BLUE, (x, y, 2 * self.button_width, self.button_height))
+        x, y = self.authors_button[0]
+        pygame.draw.rect(self.screen, RED, (x, y, 2 * self.button_width, self.button_height))
+        x, y = self.quit_button[0]
+        pygame.draw.rect(self.screen, BLACK, (x, y, 2 * self.button_width, self.button_height))
+
+    def play(self, width, height):
+        roc = Rocket(self.screen, width, height)
+        self.active = False
+        return roc
+
+    def tutorial(self):
+        pygame.draw.rect(self.screen, COSMIC, (self.center[0] - 40, self.center[1] - 60, 80, 120))
+
+    def authors(self):
+        pygame.draw.rect(self.screen, COSMIC, (self.center[0] - 40, self.center[1] - 60, 80, 120))
+    def quit(self):
+        return True
 
 
 def basis_rotation(x, y, angle):
