@@ -28,8 +28,8 @@ def main():
     text = pygame.font.Font(None, 24)
     finished = False
 
-    rocket = Rocket(screen, width, height)
     planet = Planet(screen, width, height)
+    rocket = Rocket(screen, width, height, planet)
 
     while not finished:
 
