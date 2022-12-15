@@ -74,7 +74,7 @@ def calculate_physical_time(planet):
 def calculate_rocket(rocket, planet):
     for i in range(int(planet.dT / dt)):
         thrust_force_x, thrust_force_y = 0, 0
-        if rocket.fuel_mass > 0 and not rocket.deadw:
+        if rocket.fuel_mass > 0 and not rocket.dead:
             thrust_force_x, thrust_force_y = calculate_thrust_force(rocket)
             waste_fuel(rocket)
         gravity_force_x, gravity_force_y = calculate_gravity(rocket, planet)
