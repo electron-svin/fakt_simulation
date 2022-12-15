@@ -1,7 +1,7 @@
 import math
 import pygame
 
-FPS = 30
+# Цвета, используемые в проекте
 RED = 0xFF0000
 BLUE = 0x0000FF
 YELLOW = 0xFFC91F
@@ -18,7 +18,9 @@ gravitational_constant = 6.67408E-11
 
 
 class Planet:
-
+    """
+    Класс планеты, в нашей версии это Земля
+    """
     def __init__(self, screen, WIDTH, HEIGHT):
         self.WIDTH = WIDTH
         self.HEIGHT = HEIGHT
@@ -55,6 +57,11 @@ class Planet:
         self.air_force_height = 40_000
 
     def draw(self, rocket):
+        """
+        Отрисовывает планету
+        :param rocket: экземпляр класса Rocket
+        :return: None
+        """
         if self.map_mode:
             pygame.draw.circle(self.screen, self.color_atmosphere, (self.center_map[0], self.center_map[1]), (self.r + self.r_atmosphere) * self.scale_factor)
             pygame.draw.circle(self.screen, self.color, (self.center_map[0], self.center_map[1]), self.r * self.scale_factor)
@@ -68,7 +75,13 @@ class Planet:
                 pygame.draw.polygon(self.screen, self.color, [[0, self.HEIGHT - h], [self.WIDTH, self.HEIGHT - h], [self.WIDTH, self.HEIGHT], [0, self.HEIGHT]])
 
     def scale(self, keys, rocket):
-        if self.map_mode and keys[self.up]:
+        """
+        Изменяет масштаб отрисовки
+        :param keys: массив нажатия клавиатуры
+        :param rocket: экземпляр класса Rocket
+        :return:
+        """
+        if self.map_mode and self.scale_factor < 10**-3 and keys[self.up]:
             self.scale_factor *= 1.05
         if self.map_mode and keys[self.down]:
             self.scale_factor /= 1.05
@@ -78,6 +91,12 @@ class Planet:
             self.time_scale_to_rocket_counter = 15
 
     def move_screen(self, action, event):
+        """
+        Перемещает экран, если мышь движется
+        :param action: текущее состояние мыши
+        :param event: событие мыши
+        :return:
+        """
         if action == "down":
             self.start_position = event.pos
             self.mouse_pressed = True
@@ -89,6 +108,11 @@ class Planet:
             self.mouse_pressed = False
 
     def time_scale(self, keys):
+        """
+        Изменяет масштаб по времени
+        :param keys: массив нажатия клавиатуры
+        :return: None
+        """
         if self.time_scale_counter == 0 and keys[self.left]:
             if self.time_scale_index > 0:
                 self.time_scale_index -= 1
@@ -101,14 +125,27 @@ class Planet:
                 self.time_scale_counter = 5
 
     def time_scale_counter_timer(self):
+        """
+        Счётчик времени для изменения размера
+        :return: None
+        """
         if self.time_scale_counter > 0:
             self.time_scale_counter -= 1
 
     def time_scale_to_rocket_counter_timer(self):
+        """
+        Счётчик времени для приближения к ракете
+        :return: None
+        """
         if self.time_scale_to_rocket_counter > 0:
             self.time_scale_to_rocket_counter -= 1
 
     def change_mode(self, keys):
+        """
+        Изменение режима работы
+        :param keys:
+        :return: None
+        """
         if self.change_mode_timer == 0 and keys[self.change_mode_key]:
             self.map_mode = not self.map_mode
             self.change_mode_timer = 10
@@ -119,6 +156,11 @@ class Planet:
                 self.scale_factor = 2
 
     def change_mode_timer_count(self):
+        """
+        Массив нажатия клавиатуры
+        Таймер изменения режима работы
+        :return: None
+        """
         if self.change_mode_timer > 0:
             self.change_mode_timer -= 1
 

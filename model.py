@@ -29,7 +29,8 @@ def calculate_gravity(rocket, obj):
 
 
 def calculate_acceleration(rocket, force_x, force_y):
-    """Изменяет x- и y- составляющие скорости ракеты за 1 кадр в соответствии с её полным ускорением
+    """
+    Изменяет x- и y- составляющие скорости ракеты за 1 кадр в соответствии с её полным ускорением
     :param rocket: экземпляр класса Rocket, который изменяем
     :param force_x: сила по Ox
     :param force_y: cила по Oy
@@ -41,6 +42,7 @@ def calculate_acceleration(rocket, force_x, force_y):
 
 def calculate_thrust_force(rocket):
     """
+    Рассчитывает силу реактивной тяги
     :param rocket: экземпляр класса Rocket
     :return: Возвращает массив из x- и y- составляющих силы реактивной тяги ракет
     """
@@ -53,7 +55,8 @@ def calculate_thrust_force(rocket):
 
 
 def waste_fuel(rocket):
-    """ Тратит часть топлива каждый кадр, уменьшая fuel mass, выключает двигатель при отсутствии топлива
+    """
+    Тратит часть топлива каждый кадр, уменьшая fuel mass, выключает двигатель при отсутствии топлива
     :param rocket: экземпляр класса Rocket
     :return: None
     """
@@ -64,7 +67,8 @@ def waste_fuel(rocket):
 
 
 def calculate_moment_of_inertia(rocket):
-    """ Считает момент инерции
+    """
+    Считает момент инерции
     :param rocket: экземпляр класса Rocket
     :return: момент инерции
     """
@@ -72,7 +76,8 @@ def calculate_moment_of_inertia(rocket):
 
 
 def calculate_angular_acceleration(rocket):
-    """ Рассчитывает угловое ускорение
+    """
+    Рассчитывает угловое ускорение
     :param rocket: экземпляр класса Rocket
     :return: угловое ускорение
     """
@@ -83,7 +88,8 @@ def calculate_angular_acceleration(rocket):
 
 
 def move(rocket):
-    """ Пересчитывает координаты ракеты
+    """
+    Пересчитывает координаты ракеты
     :param rocket: экземпляр класса Rocket
     :return: None
     """
@@ -94,7 +100,8 @@ def move(rocket):
 
 
 def calculate_physical_time(planet):
-    """ Рассчитывает физическое время
+    """
+    Рассчитывает физическое время
     :param planet: экземпляр класса Planet
     :return: None
     """
@@ -102,7 +109,8 @@ def calculate_physical_time(planet):
 
 
 def calculate_physics(rocket, planet):
-    """ Главный модуль, который просчитывает всю физику
+    """
+    Главный модуль, который просчитывает всю физику
     :param rocket: экземпляр класса Rocket
     :param planet: экземпляр класса Planet
     :return: None
@@ -124,7 +132,8 @@ def calculate_physics(rocket, planet):
 
 
 def air_resistance_force(rocket, planet):
-    """ Рассчитываем силу сопротивления для ракеты
+    """
+    Рассчитываем силу сопротивления для ракеты
     :param rocket: экземпляр класса Rocket
     :param planet: экземпляр класса Planet
     :return: None
@@ -146,8 +155,8 @@ def air_resistance_force(rocket, planet):
 
 
 def calculate_energy(rocket, obj):
-    """ Возвращает энергию в каждый момент времени
-    м
+    """
+    Возвращает энергию в каждый момент времени
     :return: полную энегрию тела
     """
     distance = ((rocket.x - obj.x) ** 2 + (rocket.y - obj.y) ** 2)
@@ -159,14 +168,17 @@ def calculate_energy(rocket, obj):
 
 
 def calculate_ellipse_param(rocket, obj, energy):
-    """Просчитывает параметры эллипса и возвращает их"""
+    """
+    Просчитывает параметры эллипса и возвращает их
+    """
     a = - gravitational_constant * (rocket.shell_mass + rocket.fuel_mass) * obj.mass / energy
     b = 10  # чуть позже
     return a, b
 
 
 def collision(planet, rocket):
-    """ Отслеживает столконовение с планетой
+    """
+    Отслеживает столконовение с планетой
     :param rocket: экземпляр класса Rocket
     :param planet: экземпляр класса Planet
     :return: None
