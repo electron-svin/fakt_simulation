@@ -28,7 +28,7 @@ class Planet:
         self.y = 0
         self.r = 6371 * 10 ** 3
         self.color = GREEN
-        self.scale_factor = 2
+        self.scale_factor = 4
         self.up = pygame.K_UP
         self.down = pygame.K_DOWN
         self.local = pygame.K_MINUS
@@ -129,7 +129,7 @@ class Stage:
         self.HEIGHT = HEIGHT
         self.screen = screen
         self.height = 70
-        self.radius = 1.5
+        self.radius = 10
         self.moment_of_inertia = 5 * 10 ** 6  # момент инерции относительно центра масс
         self.nozzle_angle = 0  # угол поворота сопла
         self.shell_mass = 30_000
@@ -144,8 +144,7 @@ class Stage:
         self.omega = 0 # угловая скорость вращения против часовой стрелки
         self.x = 0
         self.y = 6371_000 + self.height / 2
-        self.image_rocket = pygame.image.load("picture\\saturn_v_stage_1.png")
-        self.image_mark = pygame.image.load("picture\\rocket_mark.png")
+        self.image_stage = pygame.image.load("picture\\saturn_v_stage_1.png")
         self.collision_point = [(0, -35), (-24.75, 35), (24.75, 35)]
         self.inside_atmosphere = True
         self.flame_animation_file = "picture\\flame\\flame_"
@@ -175,7 +174,7 @@ class Stage:
                 self.screen.blit(animation_image, animation_image_rect)
             self.explosion_animation_count += 0.5
 
-    def draw(self, planet):
+    def draw(self, rocket_surface, planet):
         '''if not self.dead and planet.map_mode:
             w = planet.center_map[0]
             h = planet.center_map[1]
@@ -188,7 +187,7 @@ class Stage:
             pygame.draw.line(self.screen, RED, coordinate_array,
                              [coordinate_array[0] + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
                               coordinate_array[1] + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)'''
-        elif not self.dead:
+        '''if not self.dead:
             if self.engine_on and self.fuel_mass > 0:
                 number = int(self.flame_animation_count)
                 animation_image = pygame.image.load(self.flame_animation_file + str(number) + ".png", )
@@ -199,13 +198,10 @@ class Stage:
                 self.screen.blit(animation_image, animation_image_rect)
                 self.flame_animation_count += 0.5
                 if self.flame_animation_count > self.number_of_flame_animation - 1:
-                    self.flame_animation_count = 0
+                    self.flame_animation_count = 0'''
+        current_stages_surface = pygame.transform.scale(self.image_stage, (80, 140))
+        rocket_surface.blit(current_stages_surface, (0, 0))
 
-            current_image = pygame.transform.scale(self.image_rocket, (
-                int(self.height * planet.scale_factor), int(self.height * planet.scale_factor)))
-            current_image = pygame.transform.rotate(current_image, self.angle * 180 / 3.14)
-            current_image_rect = current_image.get_rect(center=(self.WIDTH / 2, self.HEIGHT / 2))
-            self.screen.blit(current_image, current_image_rect)
 
 class Rocket:
     def __init__(self, screen, WIDTH, HEIGHT):
@@ -224,10 +220,9 @@ class Rocket:
         self.right_key = pygame.K_d
         self.up_key = pygame.K_w
         self.down_key = pygame.K_s
-        self.radius = 1.5
+        self.radius = 5
         self.stages = [Stage(self.screen, self.WIDTH, self.HEIGHT)]
         self.height = 70
-        self.rocket_surface = pygame.Surface((140, 140))
         self.angle = 0  # угол с вертикалью, положителен обход против часовой стрелки
         self.vx = 0
         self.vy = 0
@@ -235,6 +230,8 @@ class Rocket:
         self.x = 0
         self.y = 6371_000 + self.height / 2
         self.dead = False
+        self.image_mark = pygame.image.load("picture\\rocket_mark.png")
+        self.rocket_surface = pygame.Surface((80, 140), pygame.SRCALPHA, 32)
 
     def draw_fuel_tank(self):
         """Визуализирует бак прямоугольником в правом нижнем углу"""
@@ -272,12 +269,10 @@ class Rocket:
                 self.flame_animation_count += 0.5
                 if self.flame_animation_count > self.number_of_flame_animation - 1:
                     self.flame_animation_count = 0'''
-
-            current_rocket_surface = pygame.transform.scale(self.rocket_surface, (
-                self.height * planet.scale_factor, self.height * planet.scale_factor))
+            current_rocket_surface = self.rocket_surface
+            self.stages[0].draw(self.rocket_surface, planet)
             current_rocket_surface = pygame.transform.rotate(current_rocket_surface, self.angle * 180 / 3.14)
             current_rocket_surface_rect = current_rocket_surface.get_rect(center=(self.WIDTH / 2, self.HEIGHT / 2))
-
             self.screen.blit(current_rocket_surface, current_rocket_surface_rect)
 
     def switch_engine(self, keys):
