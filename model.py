@@ -74,7 +74,7 @@ def calculate_physical_time(planet):
 def calculate_rocket(rocket, planet):
     for i in range(int(planet.dT / dt)):
         thrust_force_x, thrust_force_y = 0, 0
-        if rocket.fuel_mass > 0:
+        if rocket.fuel_mass > 0 and not rocket.deadw:
             thrust_force_x, thrust_force_y = calculate_thrust_force(rocket)
             waste_fuel(rocket)
         gravity_force_x, gravity_force_y = calculate_gravity(rocket, planet)
@@ -121,19 +121,19 @@ def calculate_ellipse_param(rocket, obj, energy):
 
 
 def collision(planet, rocket):
-    count = 0
     for point in rocket.collision_point:
-        if (point[0] * math.cos(rocket.angle) + point[1] * math.sin(rocket.angle) + rocket.x) ** 2 + \
-                (point[1] * math.cos(rocket.angle) - point[0] * math.sin(rocket.angle) + rocket.y) ** 2 <= planet.r ** 2:
+        x_point_collision = point[0] * math.cos(rocket.angle) + point[1] * math.sin(rocket.angle) + rocket.x
+        y_point_collision = point[1] * math.cos(rocket.angle) - point[0] * math.sin(rocket.angle) + rocket.y
+        if x_point_collision ** 2 + y_point_collision ** 2 <= planet.r ** 2:
+            if (rocket.vx**2 + rocket.vy**2) >= 300:
+                rocket.explosion_start((x_point_collision - rocket.x) * planet.scale_factor, (y_point_collision - rocket.y) * planet.scale_factor)
             normal_velocity = (rocket.vx * rocket.x + rocket.vy * rocket.y) / ((rocket.x ** 2 + rocket.y ** 2) ** 0.5)
             if normal_velocity <= 0:
                 rocket.vx -= normal_velocity * rocket.x / (rocket.x ** 2 + rocket.y ** 2) ** 0.5
                 rocket.vy -= normal_velocity * rocket.y / (rocket.x ** 2 + rocket.y ** 2) ** 0.5
                 rocket.vx /= 2
                 rocket.vy /= 2
-            count += 1
             rocket.omega = 0
-
 
 if __name__ == "__main__":
     print("This module is not for direct call!")

@@ -61,6 +61,7 @@ def main():
         planet.draw(rocket)
         rocket.draw(planet)
         rocket.draw_fuel_tank()
+        rocket.explosion(planet)
         planet.time_scale(pygame.key.get_pressed())
         planet.time_scale_counter_timer()
         planet.time_scale_to_rocket_counter_timer()

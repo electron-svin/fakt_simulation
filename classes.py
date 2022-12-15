@@ -156,8 +156,15 @@ class Rocket:
         self.collision_point = [(0, -35), (-24.75, 35), (24.75, 35)]
         self.inside_atmosphere = True
         self.flame_animation_file = "picture\\flame\\flame_"
+        self.explosion_animation_file = "picture\\explosion\\"
         self.flame_animation_count = 0
         self.number_of_flame_animation = 12
+        self.dead = False
+        self.explosion_animation_count = 0
+        self.number_of_explosion_animation = 30
+        self.explosion_now = False
+        self.x_explosion_point = 0
+        self.y_explosion_point = 0
 
     def draw_fuel_tank(self):
         """Визуализирует бак прямоугольником в правом нижнем углу"""
@@ -170,8 +177,24 @@ class Rocket:
         pygame.draw.rect(self.screen, BLACK, (self.WIDTH - width - 10, self.HEIGHT - height - 10, width, height))
         pygame.draw.rect(self.screen, color, (self.WIDTH - width - 10, self.HEIGHT - remainder - 10, width, remainder))
 
+    def explosion_start(self, x_point_collision, y_point_collision):
+        if not self.dead:
+            self.dead = True
+            self.x_explosion_point = x_point_collision
+            self.y_explosion_point = y_point_collision
+
+    def explosion(self, planet):
+        if self.dead and self.explosion_animation_count <= self.number_of_explosion_animation - 1:
+            if not planet.map_mode:
+                number = int(self.explosion_animation_count)
+                animation_image = pygame.image.load(self.explosion_animation_file + str(number) + ".png", )
+                animation_image = pygame.transform.scale(animation_image, (800, 600))
+                animation_image_rect = animation_image.get_rect(center=(self.WIDTH / 2 + self.x_explosion_point, self.HEIGHT / 2 - self.y_explosion_point))
+                self.screen.blit(animation_image, animation_image_rect)
+            self.explosion_animation_count += 0.5
+
     def draw(self, planet):
-        if planet.map_mode:
+        if not self.dead and planet.map_mode:
             w = planet.center_map[0]
             h = planet.center_map[1]
             coordinate_array = (w + self.x * planet.scale_factor, h - self.y * planet.scale_factor)
@@ -183,8 +206,8 @@ class Rocket:
             pygame.draw.line(self.screen, RED, coordinate_array,
                             [coordinate_array[0] + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
                              coordinate_array[1] + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
-        else:
-            if self.engine_on:
+        elif not self.dead:
+            if self.engine_on and self.fuel_mass > 0:
                 number = int(self.flame_animation_count)
                 animation_image = pygame.image.load(self.flame_animation_file + str(number) + ".png", )
                 animation_image = pygame.transform.scale(animation_image, (200, 200))
