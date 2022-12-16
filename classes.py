@@ -63,8 +63,10 @@ class Planet:
         :return: None
         """
         if self.map_mode:
-            pygame.draw.circle(self.screen, self.color_atmosphere, (self.center_map[0], self.center_map[1]), (self.r + self.r_atmosphere) * self.scale_factor)
-            pygame.draw.circle(self.screen, self.color, (self.center_map[0], self.center_map[1]), self.r * self.scale_factor)
+            pygame.draw.circle(self.screen, self.color_atmosphere, (self.center_map[0], self.center_map[1]),
+                               (self.r + self.r_atmosphere) * self.scale_factor)
+            pygame.draw.circle(self.screen, self.color, (self.center_map[0], self.center_map[1]),
+                               self.r * self.scale_factor)
         else:
             if rocket.x ** 2 + rocket.y ** 2 < (self.r + self.r_atmosphere)**2:
                 self.screen.fill(BRIGHT_BLUE)
@@ -72,7 +74,8 @@ class Planet:
                 self.screen.blit(self.image_stars, (0, 0))
             h = self.HEIGHT / 2 - (((rocket.x ** 2 + rocket.y ** 2) ** 0.5 - self.r) * self.scale_factor)
             if h > 0:
-                pygame.draw.polygon(self.screen, self.color, [[0, self.HEIGHT - h], [self.WIDTH, self.HEIGHT - h], [self.WIDTH, self.HEIGHT], [0, self.HEIGHT]])
+                pygame.draw.polygon(self.screen, self.color, [[0, self.HEIGHT - h], [self.WIDTH, self.HEIGHT - h],
+                                                              [self.WIDTH, self.HEIGHT], [0, self.HEIGHT]])
 
     def scale(self, keys, rocket):
         """
@@ -87,7 +90,8 @@ class Planet:
             self.scale_factor /= 1.05
         if self.time_scale_to_rocket_counter == 0 and self.map_mode and keys[self.scale_to_rocket]:
             self.scale_factor = 10**-4
-            self.center_map = (self.WIDTH / 2 - rocket.x * self.scale_factor, self.HEIGHT / 2 + rocket.y * self.scale_factor)
+            self.center_map = (self.WIDTH / 2 - rocket.x * self.scale_factor,
+                               self.HEIGHT / 2 + rocket.y * self.scale_factor)
             self.time_scale_to_rocket_counter = 15
 
     def move_screen(self, action, event):
@@ -169,9 +173,9 @@ class Rocket:
     """
     Класс ракеты
     """
-    def __init__(self, screen, WIDTH, HEIGHT):
-        self.WIDTH = WIDTH
-        self.HEIGHT = HEIGHT
+    def __init__(self, screen, screen_width, screen_heigth):
+        self.WIDTH = screen_width
+        self.HEIGHT = screen_heigth
         self.screen = screen
         self.height = 70
         self.radius = 1.5
@@ -247,7 +251,8 @@ class Rocket:
                 number = int(self.explosion_animation_count)
                 animation_image = pygame.image.load(self.explosion_animation_file + str(number) + ".png", )
                 animation_image = pygame.transform.scale(animation_image, (800, 600))
-                animation_image_rect = animation_image.get_rect(center=(self.WIDTH / 2 + self.x_explosion_point, self.HEIGHT / 2 - self.y_explosion_point))
+                animation_image_rect = animation_image.get_rect(center=(self.WIDTH / 2 + self.x_explosion_point,
+                                                                        self.HEIGHT / 2 - self.y_explosion_point))
                 self.screen.blit(animation_image, animation_image_rect)
             self.explosion_animation_count += 0.5
 
@@ -297,12 +302,13 @@ class Rocket:
         """
         a, b, phi = self.calculate_ellipse_param(planet)
         print((0, 0, abs(a*planet.scale_factor), abs(b*planet.scale_factor)))
-        ellipsis_surface = pygame.Surface((int(abs(2*b*planet.scale_factor)) + 1, int(abs(2*a*planet.scale_factor)) + 1), pygame.SRCALPHA)
+        ellipsis_surface = pygame.Surface((int(abs(2*b*planet.scale_factor)) + 1,
+                                           int(abs(2*a*planet.scale_factor)) + 1), pygame.SRCALPHA)
         rect = pygame.Rect((0, 0, abs(2 * b * planet.scale_factor), abs(2 * a * planet.scale_factor)))
         pygame.draw.ellipse(ellipsis_surface, RED, rect, 3)
         print(a*planet.scale_factor, b*planet.scale_factor)
         ellipsis_surface = pygame.transform.rotate(ellipsis_surface, phi * 180 / 3.14 - 90)
-        ellipsis_surface_rect = ellipsis_surface.get_rect(center = planet.center_map)
+        ellipsis_surface_rect = ellipsis_surface.get_rect(center=planet.center_map)
         self.screen.blit(ellipsis_surface, ellipsis_surface_rect)
 
     def draw(self, planet):
@@ -318,18 +324,18 @@ class Rocket:
             current_mark_image = pygame.transform.scale(self.image_mark, (
                 15, 20))
             current_mark_image = pygame.transform.rotate(current_mark_image, self.angle * 180 / 3.14)
-            current_mark_rect = current_mark_image.get_rect(center= coordinate_array)
+            current_mark_rect = current_mark_image.get_rect(center=coordinate_array)
             self.screen.blit(current_mark_image, current_mark_rect)
             pygame.draw.line(self.screen, RED, coordinate_array,
-                            [coordinate_array[0] + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
-                             coordinate_array[1] + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
+                             [coordinate_array[0] + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
+                              coordinate_array[1] + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
         elif not self.dead:
             if self.engine_on and self.fuel_mass > 0:
                 number = int(self.flame_animation_count)
                 animation_image = pygame.image.load(self.flame_animation_file + str(number) + ".png", )
                 animation_image = pygame.transform.scale(animation_image, (200, 200))
                 animation_image = pygame.transform.rotate(animation_image, self.angle * 180 / 3.14 + 180)
-                x, y = self.basis_rotation(2, 110, -self.angle)
+                x, y = basis_rotation(2, 110, -self.angle)
                 animation_image_rect = animation_image.get_rect(center=(self.WIDTH / 2 + x, self.HEIGHT / 2 + y))
                 self.screen.blit(animation_image, animation_image_rect)
                 self.flame_animation_count += 0.5
@@ -365,14 +371,15 @@ class Rocket:
         if keys[self.right_key]:
             self.nozzle_angle = 0.001
 
-    def basis_rotation(self, x, y, angle):
-        """ Смена базиса поворотом
-        :param x: координата по Ox
-        :param y: координата по Oy
-        :param angle: угол ворота системы координат
-        :return: новые значения x, y
-        """
-        return x * math.cos(angle) - y * math.sin(angle), x * math.sin(angle) + y * math.cos(angle)
+
+def basis_rotation(x, y, angle):
+    """ Смена базиса поворотом
+    :param x: координата по Ox
+    :param y: координата по Oy
+    :param angle: угол ворота системы координат
+    :return: новые значения x, y
+    """
+    return x * math.cos(angle) - y * math.sin(angle), x * math.sin(angle) + y * math.cos(angle)
 
 
 if __name__ == "__main__":
