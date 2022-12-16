@@ -2,6 +2,13 @@ import pygame
 
 
 def text_score(text, planet, rocket):
+    """
+    Выводит информацию о ракете
+    :param text: текстовая переменная pygame
+    :param planet: экземпляр класса Planet
+    :param rocket: экземпляр класса Rocket
+    :return: None
+    """
     txt = text.render('time: ' + f"{planet.time:.{1}f}" + " s", True, (139, 0, 255))
     planet.screen.blit(txt, (20, 30))
     txt = text.render('height: ' + f"{(rocket.x**2 + rocket.y**2)**0.5  - 6371_035:.{1}f}" + " м", True, (139, 0, 255))
@@ -10,6 +17,6 @@ def text_score(text, planet, rocket):
                       (139, 0, 255))
     planet.screen.blit(txt, (20, 70))
     txt = text.render('velocity: ' + f"{(rocket.vx**2 + rocket.vy**2)**0.5:.{1}f}", True,
-                     (139, 0, 255))
+                      (139, 0, 255))
     planet.screen.blit(txt, (20, 90))
     pygame.display.update()

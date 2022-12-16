@@ -79,7 +79,7 @@ class Planet:
         Изменяет масштаб отрисовки
         :param keys: массив нажатия клавиатуры
         :param rocket: экземпляр класса Rocket
-        :return:
+        :return: None
         """
         if self.map_mode and self.scale_factor < 10**-3 and keys[self.up]:
             self.scale_factor *= 1.05
@@ -95,7 +95,7 @@ class Planet:
         Перемещает экран, если мышь движется
         :param action: текущее состояние мыши
         :param event: событие мыши
-        :return:
+        :return: None
         """
         if action == "down":
             self.start_position = event.pos
@@ -292,8 +292,8 @@ class Rocket:
     def draw_ellipse(self, planet):
         """
         Построение эллипса - недоработана
-        :param planet:
-        :return:
+        :param planet: экземпляр класса Planet
+        :return: None
         """
         a, b, phi = self.calculate_ellipse_param(planet)
         print((0, 0, abs(a*planet.scale_factor), abs(b*planet.scale_factor)))
@@ -370,7 +370,7 @@ class Rocket:
         :param x: координата по Ox
         :param y: координата по Oy
         :param angle: угол ворота системы координат
-        :return: новые значения x, ywd
+        :return: новые значения x, y
         """
         return x * math.cos(angle) - y * math.sin(angle), x * math.sin(angle) + y * math.cos(angle)
 
