@@ -40,18 +40,20 @@ def main():
             if menu.active:
                 screen.fill(COSMIC)
                 menu.draw()
-                if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.type == pygame.MOUSEBUTTONDOWN \
+                        and (not menu.tutorial_button_active) \
+                        and (not menu.authors_button_active):
 
                     if (menu.play_button[0][0] < event.pos[0]) and (event.pos[0] < menu.play_button[3][0]) and \
                             (menu.play_button[0][1] < event.pos[1]) and (event.pos[1] < menu.play_button[3][1]):
-                        rocket = menu.play
+                        rocket = menu.play(width, height)
+                        menu.active = False
 
                     elif (menu.tutorial_button[0][0] < event.pos[0]) and (
                             event.pos[0] < menu.tutorial_button[3][0]) and \
                             (menu.tutorial_button[0][1] < event.pos[1]) and (
                             event.pos[1] < menu.tutorial_button[3][1]):
                         menu.tutorial_button_active = True
-
 
                     elif (menu.authors_button[0][0] < event.pos[0]) and (
                             event.pos[0] < menu.authors_button[3][0]) and \

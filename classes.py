@@ -12,6 +12,7 @@ BLACK = (0, 0, 0)
 WHITE = 0xFFFFFF
 GREY = 0x7D7D7D
 BRIGHT_BLUE = (185, 237, 255)
+DIM_BRIGHT_BLUE = (148, 190, 204)
 COSMIC = (23, 23, 23)
 
 gravitational_constant = 6.67408E-11
@@ -262,7 +263,7 @@ class Rocket:
 class Menu:
     def __init__(self, screen, WIDTH, HEIGHT):
         self.screen = screen
-        self.active = False
+        self.active = True
         self.button_width = 100
         self.button_height = 40
         self.center = [int(WIDTH / 2), int(HEIGHT / 2)]
@@ -286,14 +287,27 @@ class Menu:
                             [self.center[0] + self.button_width, self.center[1] + 2 * self.button_height]]
 
     def draw(self):
+        text = pygame.font.Font(None, 45)
+
         x, y = self.play_button[0]
-        pygame.draw.rect(self.screen, RED, (x, y, 2 * self.button_width, self.button_height))
+        pygame.draw.rect(self.screen, BRIGHT_BLUE, (x, y, 2 * self.button_width, self.button_height + 2), 2)
+        txt = text.render('PLAY', True, BRIGHT_BLUE)
+        self.screen.blit(txt, (x + 61, y + 7))
+
         x, y = self.tutorial_button[0]
-        pygame.draw.rect(self.screen, BLUE, (x, y, 2 * self.button_width, self.button_height))
+        pygame.draw.rect(self.screen, BRIGHT_BLUE, (x, y, 2 * self.button_width, self.button_height + 2), 2)
+        txt = text.render('TUTORIAL', True, BRIGHT_BLUE)
+        self.screen.blit(txt, (x + 23, y + 7))
+
         x, y = self.authors_button[0]
-        pygame.draw.rect(self.screen, RED, (x, y, 2 * self.button_width, self.button_height))
+        pygame.draw.rect(self.screen, BRIGHT_BLUE, (x, y, 2 * self.button_width, self.button_height + 2), 2)
+        txt = text.render('AUTHORS', True, BRIGHT_BLUE)
+        self.screen.blit(txt, (x + 21, y + 7))
+
         x, y = self.quit_button[0]
-        pygame.draw.rect(self.screen, BLACK, (x, y, 2 * self.button_width, self.button_height))
+        pygame.draw.rect(self.screen, BRIGHT_BLUE, (x, y, 2 * self.button_width, self.button_height + 2), 2)
+        txt = text.render('QUIT', True, BRIGHT_BLUE)
+        self.screen.blit(txt, (x + 62, y + 7))
 
     def play(self, width, height):
         roc = Rocket(self.screen, width, height)
@@ -302,12 +316,64 @@ class Menu:
 
     def tutorial(self):
         if self.tutorial_button_active:
-            pygame.draw.rect(self.screen, COSMIC, (self.center[0] - 40, self.center[1] - 60, 80, 120))
+            pygame.draw.rect(self.screen, COSMIC, (self.center[0] - 130, self.center[1] - 130, 260, 260))
+            pygame.draw.rect(self.screen, BRIGHT_BLUE, (self.center[0] - 130, self.center[1] - 130, 260, 260), 3)
+            text = pygame.font.Font(None, 24)
+            txt = text.render('Обучение', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 40, self.center[1] - 120))
+            txt = text.render('W/S - включить/выключить', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1] - 100))
+            txt = text.render('двигатель', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1] - 80))
+            txt = text.render('A/D -  повернуть влево/вправо', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1] - 60))
+            txt = text.render('Q - переключить режим карты', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1] - 40))
+            txt = text.render('LEFT/RIGHT - замедлить/', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1] - 20))
+            txt = text.render('ускорить течение времени', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1]))
+            txt = text.render('ESC - выйти в меню', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1] + 20))
+
+            txt = text.render('В режиме карты:', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 80, self.center[1] + 40))
+            txt = text.render('UP/DOWN - изменить масштаб', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1] + 60))
+            txt = text.render('MOUSE - перетаскивать', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1] + 80))
+            txt = text.render('SHIFT - навестись на ракету', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1] + 100))
 
     def authors(self):
         if self.authors_button_active:
-            pygame.draw.rect(self.screen, COSMIC, (self.center[0] - 40, self.center[1] - 60, 80, 120))
+            pygame.draw.rect(self.screen, COSMIC, (self.center[0] - 130, self.center[1] - 110, 260, 215))
+            pygame.draw.rect(self.screen, BRIGHT_BLUE, (self.center[0] - 130, self.center[1] - 110, 260, 215), 3)
 
+            text = pygame.font.Font(None, 40)
+            txt = text.render('TEAM MEMBERS', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 117, self.center[1] - 100))
+
+            text = pygame.font.Font(None, 30)
+            txt = text.render('teamleader:', True, DIM_BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 60, self.center[1] - 60))
+            text = pygame.font.Font(None, 37)
+            txt = text.render('Kozhanov Ivan', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 90, self.center[1] - 40))
+
+            text = pygame.font.Font(None, 30)
+            txt = text.render('junior developer:', True, DIM_BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 85, self.center[1] - 5))
+            text = pygame.font.Font(None, 37)
+            txt = text.render('Chepurov Yegor', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 100, self.center[1] + 15))
+
+            text = pygame.font.Font(None, 30)
+            txt = text.render('just Tolik:', True, DIM_BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 50, self.center[1] + 50))
+            text = pygame.font.Font(None, 37)
+            txt = text.render('Tolik', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 33, self.center[1] + 70))
     def quit(self):
         return True
 
