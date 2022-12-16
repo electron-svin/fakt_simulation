@@ -189,7 +189,7 @@ class Rocket:
         self.fuel_mass = self.max_fuel_mass
         self.engine_on = False
         self.mu = 1000
-        self.u = 4000
+        self.u = 6000
         self.angle = 0
         self.vx = 0
         self.vy = 0
