@@ -21,9 +21,9 @@ class Planet:
     """
     Класс планеты, в нашей версии это Земля
     """
-    def __init__(self, screen, WIDTH, HEIGHT):
-        self.WIDTH = WIDTH
-        self.HEIGHT = HEIGHT
+    def __init__(self, screen, screen_width, screen_heigth):
+        self.WIDTH = screen_width
+        self.HEIGHT = screen_heigth
         self.screen = screen
         self.mass = 5.9742E24
         self.x = 0
@@ -49,8 +49,8 @@ class Planet:
         self.change_mode_key = pygame.K_q
         self.scale_to_rocket = pygame.K_LSHIFT
         self.color_atmosphere = BRIGHT_BLUE
-        self.start_position = (WIDTH / 2, HEIGHT / 2)
-        self.center_map = (WIDTH / 2, HEIGHT / 2)
+        self.start_position = (screen_width / 2, screen_heigth / 2)
+        self.center_map = (screen_width / 2, screen_heigth / 2)
         self.mouse_pressed = False
         self.time_scale_to_rocket_counter = 0
         self.image_stars = pygame.image.load("picture\\stars.jpg")
@@ -166,24 +166,27 @@ class Planet:
 
 
 class Rocket:
+    """
+    Класс ракеты
+    """
     def __init__(self, screen, WIDTH, HEIGHT):
         self.WIDTH = WIDTH
         self.HEIGHT = HEIGHT
         self.screen = screen
         self.height = 70
         self.radius = 1.5
-        self.moment_of_inertia = 5 * 10 ** 6  # момент инерции относительно центра масс
-        self.nozzle_angle = 0  # угол поворота сопла
+        self.moment_of_inertia = 5 * 10 ** 6
+        self.nozzle_angle = 0
         self.shell_mass = 30_000
         self.max_fuel_mass = 270_000
         self.fuel_mass = self.max_fuel_mass
         self.engine_on = False
         self.mu = 1000
         self.u = 4000
-        self.angle = 0  # угол с вертикалью, положителен обход против часовой стрелки
+        self.angle = 0
         self.vx = 0
         self.vy = 0
-        self.omega = 0 # угловая скорость вращения против часовой стрелки
+        self.omega = 0
         self.x = 0
         self.y = 6371_000 + self.height / 2
         self.r = 30
@@ -208,7 +211,10 @@ class Rocket:
         self.y_explosion_point = 0
 
     def draw_fuel_tank(self):
-        """Визуализирует бак прямоугольником в правом нижнем углу"""
+        """
+        Визуализирует бак прямоугольником в правом нижнем углу
+        :return: None
+        """
         height = 200
         width = 40
         color = BLACK
@@ -219,12 +225,23 @@ class Rocket:
         pygame.draw.rect(self.screen, color, (self.WIDTH - width - 10, self.HEIGHT - remainder - 10, width, remainder))
 
     def explosion_start(self, x_point_collision, y_point_collision):
+        """
+        Начинает взрыв ракеты при большой скорости
+        :param x_point_collision: координата по x точки взрыва
+        :param y_point_collision: координата по y точки взрыва
+        :return:
+        """
         if not self.dead:
             self.dead = True
             self.x_explosion_point = x_point_collision
             self.y_explosion_point = y_point_collision
 
     def explosion(self, planet):
+        """
+        Отрисовка врзрыва
+        :param planet: экземпляр класса Planet
+        :return: None
+        """
         if self.dead and self.explosion_animation_count <= self.number_of_explosion_animation - 1:
             if not planet.map_mode:
                 number = int(self.explosion_animation_count)
@@ -234,7 +251,66 @@ class Rocket:
                 self.screen.blit(animation_image, animation_image_rect)
             self.explosion_animation_count += 0.5
 
+    def calculate_ellipse_param(self, obj):
+        """
+        Просчитывает параметры эллипса и возвращает их
+        :param obj: экземпляр класса Planet
+        :return: a, b - полуоси эллипса, phi - угол поворота эллипса
+        """
+        energy = self.calculate_energy(obj)
+        distance = ((self.x - obj.x) ** 2 + (self.y - obj.y) ** 2) ** 0.5
+        v_r = ((self.vx * self.x) + (self.vy * self.y)) / distance
+        v_phi = ((self.vx ** 2 + self.vy ** 2) - v_r ** 2) ** 0.5
+        l_0 = v_phi * distance
+        print(energy)
+        a = - gravitational_constant * (self.shell_mass + self.fuel_mass) * obj.mass / energy
+        b = l_0 / (-2 * energy / (self.shell_mass + self.fuel_mass)) ** 0.5
+        c = (a ** 2 - b ** 2) ** 0.5
+        x_0 = a * (distance - a) / (a ** 2 - b ** 2) ** 0.5
+        if abs((x_0 + c) / distance) >= 1:
+            phi = math.pi
+        else:
+            phi = math.pi - math.acos(abs((x_0 + c) / distance))
+        if x_0 == 0:
+            psi = 0
+        else:
+            psi = math.atan(abs((distance * math.sin(phi)) / x_0))
+        return a, b, psi
+
+    def calculate_energy(self, obj):
+        """
+        Возвращает энергию в каждый момент времени
+        :return: полную энегрию тела
+        """
+        distance = ((self.x - obj.x) ** 2 + (self.y - obj.y) ** 2) ** 0.5
+        potentional_energy = - gravitational_constant * obj.mass * (self.shell_mass + self.fuel_mass) / distance
+        kinetic_energy = (self.shell_mass + self.fuel_mass) * (self.vx ** 2 + self.vy ** 2) / 2
+        energy = potentional_energy + kinetic_energy
+
+        return energy
+
+    def draw_ellipse(self, planet):
+        """
+        Построение эллипса - недоработана
+        :param planet:
+        :return:
+        """
+        a, b, phi = self.calculate_ellipse_param(planet)
+        print((0, 0, abs(a*planet.scale_factor), abs(b*planet.scale_factor)))
+        ellipsis_surface = pygame.Surface((int(abs(2*b*planet.scale_factor)) + 1, int(abs(2*a*planet.scale_factor)) + 1), pygame.SRCALPHA)
+        rect = pygame.Rect((0, 0, abs(2 * b * planet.scale_factor), abs(2 * a * planet.scale_factor)))
+        pygame.draw.ellipse(ellipsis_surface, RED, rect, 3)
+        print(a*planet.scale_factor, b*planet.scale_factor)
+        ellipsis_surface = pygame.transform.rotate(ellipsis_surface, phi * 180 / 3.14 - 90)
+        ellipsis_surface_rect = ellipsis_surface.get_rect(center = planet.center_map)
+        self.screen.blit(ellipsis_surface, ellipsis_surface_rect)
+
     def draw(self, planet):
+        """
+        Отрисовка ракеты
+        :param planet: экземпляр класса Planet
+        :return: None
+        """
         if not self.dead and planet.map_mode:
             w = planet.center_map[0]
             h = planet.center_map[1]
@@ -253,7 +329,7 @@ class Rocket:
                 animation_image = pygame.image.load(self.flame_animation_file + str(number) + ".png", )
                 animation_image = pygame.transform.scale(animation_image, (200, 200))
                 animation_image = pygame.transform.rotate(animation_image, self.angle * 180 / 3.14 + 180)
-                x, y = basis_rotation(2, 110, -self.angle)
+                x, y = self.basis_rotation(2, 110, -self.angle)
                 animation_image_rect = animation_image.get_rect(center=(self.WIDTH / 2 + x, self.HEIGHT / 2 + y))
                 self.screen.blit(animation_image, animation_image_rect)
                 self.flame_animation_count += 0.5
@@ -267,23 +343,36 @@ class Rocket:
             self.screen.blit(current_image, current_image_rect)
 
     def switch_engine(self, keys):
-        """Включает/выключает двигатель при разовом нажатии на W/S"""
+        """
+        Включает/выключает двигатель при разовом нажатии на W/S
+        :param keys: массив с информации с клавиатуры
+        :return: None
+        """
         if keys[self.up_key]:
             self.engine_on = True
         elif keys[self.down_key]:
             self.engine_on = False
 
     def turn(self, keys):
-        """Включает/выключает двигатель при разовом нажатии на W/S"""
+        """
+        Включает/выключает двигатель при разовом нажатии на W/S
+        :param keys: массив с информации с клавиатуры
+        :return: None
+        """
         self.nozzle_angle = 0
         if keys[self.left_key]:
             self.nozzle_angle = - 0.001
         if keys[self.right_key]:
             self.nozzle_angle = 0.001
 
-
-def basis_rotation(x, y, angle):
-    return x * math.cos(angle) - y * math.sin(angle), x * math.sin(angle) + y * math.cos(angle)
+    def basis_rotation(self, x, y, angle):
+        """ Смена базиса поворотом
+        :param x: координата по Ox
+        :param y: координата по Oy
+        :param angle: угол ворота системы координат
+        :return: новые значения x, ywd
+        """
+        return x * math.cos(angle) - y * math.sin(angle), x * math.sin(angle) + y * math.cos(angle)
 
 
 if __name__ == "__main__":

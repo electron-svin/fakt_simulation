@@ -62,7 +62,6 @@ def main():
         planet.scale(pygame.key.get_pressed(), rocket)
         planet.change_mode(pygame.key.get_pressed())
         planet.change_mode_timer_count()
-
         # отрисовка элементов игры
         screen.fill(COSMIC)
         planet.draw(rocket)
