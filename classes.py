@@ -261,6 +261,9 @@ class Rocket:
 
 
 class Menu:
+    """
+
+    """
     def __init__(self, screen, WIDTH, HEIGHT):
         self.screen = screen
         self.active = True
@@ -287,6 +290,7 @@ class Menu:
                             [self.center[0] + self.button_width, self.center[1] + 2 * self.button_height]]
 
     def draw(self):
+        "Выводит изображение игрового меню"
         text = pygame.font.Font(None, 45)
 
         x, y = self.play_button[0]
@@ -309,12 +313,18 @@ class Menu:
         txt = text.render('QUIT', True, BRIGHT_BLUE)
         self.screen.blit(txt, (x + 62, y + 7))
 
+        text = pygame.font.Font(None, 150)
+        txt = text.render('FAKT SIMULATION', True, BRIGHT_BLUE)
+        self.screen.blit(txt, (self.center[0] - 500, self.center[1] - 300))
+
     def play(self, width, height):
+        "Запускает новую игру с самого начала"
         roc = Rocket(self.screen, width, height)
         self.active = False
         return roc
 
     def tutorial(self):
+        "Проверяет, открыт ли туториал, и рисует его"
         if self.tutorial_button_active:
             pygame.draw.rect(self.screen, COSMIC, (self.center[0] - 130, self.center[1] - 130, 260, 260))
             pygame.draw.rect(self.screen, BRIGHT_BLUE, (self.center[0] - 130, self.center[1] - 130, 260, 260), 3)
@@ -346,6 +356,7 @@ class Menu:
             self.screen.blit(txt, (self.center[0] - 120, self.center[1] + 100))
 
     def authors(self):
+        "Проверяет, открыты ли титры, и выводит их"
         if self.authors_button_active:
             pygame.draw.rect(self.screen, COSMIC, (self.center[0] - 130, self.center[1] - 110, 260, 215))
             pygame.draw.rect(self.screen, BRIGHT_BLUE, (self.center[0] - 130, self.center[1] - 110, 260, 215), 3)
@@ -374,8 +385,6 @@ class Menu:
             text = pygame.font.Font(None, 37)
             txt = text.render('Tolik', True, BRIGHT_BLUE)
             self.screen.blit(txt, (self.center[0] - 33, self.center[1] + 70))
-    def quit(self):
-        return True
 
 
 def basis_rotation(x, y, angle):
