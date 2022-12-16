@@ -1,7 +1,7 @@
 import math
 import pygame
 
-# Цвета, используемые в проекте
+FPS = 30
 RED = 0xFF0000
 BLUE = 0x0000FF
 YELLOW = 0xFFC91F
@@ -12,18 +12,20 @@ BLACK = (0, 0, 0)
 WHITE = 0xFFFFFF
 GREY = 0x7D7D7D
 BRIGHT_BLUE = (185, 237, 255)
+DIM_BRIGHT_BLUE = (148, 190, 204)
 COSMIC = (23, 23, 23)
 
 gravitational_constant = 6.67408E-11
 
 
 class Planet:
-    """
-    Класс планеты, в нашей версии это Земля
-    """
-    def __init__(self, screen, WIDTH, HEIGHT):
-        self.WIDTH = WIDTH
-        self.HEIGHT = HEIGHT
+
+    def __init__(self, screen, screen_width, screen_height):
+        """
+        Класс планеты, в нашем случае Земля
+        """
+        self.WIDTH = screen_width
+        self.HEIGHT = screen_height
         self.screen = screen
         self.mass = 5.9742E24
         self.x = 0
@@ -49,8 +51,8 @@ class Planet:
         self.change_mode_key = pygame.K_q
         self.scale_to_rocket = pygame.K_LSHIFT
         self.color_atmosphere = BRIGHT_BLUE
-        self.start_position = (WIDTH / 2, HEIGHT / 2)
-        self.center_map = (WIDTH / 2, HEIGHT / 2)
+        self.start_position = (screen_width / 2, screen_height / 2)
+        self.center_map = (screen_width / 2, screen_height / 2)
         self.mouse_pressed = False
         self.time_scale_to_rocket_counter = 0
         self.image_stars = pygame.image.load("picture\\stars.jpg")
@@ -63,8 +65,10 @@ class Planet:
         :return: None
         """
         if self.map_mode:
-            pygame.draw.circle(self.screen, self.color_atmosphere, (self.center_map[0], self.center_map[1]), (self.r + self.r_atmosphere) * self.scale_factor)
-            pygame.draw.circle(self.screen, self.color, (self.center_map[0], self.center_map[1]), self.r * self.scale_factor)
+            pygame.draw.circle(self.screen, self.color_atmosphere, (self.center_map[0], self.center_map[1]),
+                               (self.r + self.r_atmosphere) * self.scale_factor)
+            pygame.draw.circle(self.screen, self.color, (self.center_map[0], self.center_map[1]),
+                               self.r * self.scale_factor)
         else:
             if rocket.x ** 2 + rocket.y ** 2 < (self.r + self.r_atmosphere)**2:
                 self.screen.fill(BRIGHT_BLUE)
@@ -72,22 +76,25 @@ class Planet:
                 self.screen.blit(self.image_stars, (0, 0))
             h = self.HEIGHT / 2 - (((rocket.x ** 2 + rocket.y ** 2) ** 0.5 - self.r) * self.scale_factor)
             if h > 0:
-                pygame.draw.polygon(self.screen, self.color, [[0, self.HEIGHT - h], [self.WIDTH, self.HEIGHT - h], [self.WIDTH, self.HEIGHT], [0, self.HEIGHT]])
+                pygame.draw.polygon(self.screen, self.color, [[0, self.HEIGHT - h], [self.WIDTH, self.HEIGHT - h],
+                                                              [self.WIDTH, self.HEIGHT], [0, self.HEIGHT]])
 
     def scale(self, keys, rocket):
         """
-        Изменяет масштаб отрисовки
+         Изменяет масштаб отрисовки
         :param keys: массив нажатия клавиатуры
         :param rocket: экземпляр класса Rocket
         :return:
+        :return: None
         """
-        if self.map_mode and self.scale_factor < 10**-3 and keys[self.up]:
+        if self.map_mode and keys[self.up]:
             self.scale_factor *= 1.05
         if self.map_mode and keys[self.down]:
             self.scale_factor /= 1.05
         if self.time_scale_to_rocket_counter == 0 and self.map_mode and keys[self.scale_to_rocket]:
             self.scale_factor = 10**-4
-            self.center_map = (self.WIDTH / 2 - rocket.x * self.scale_factor, self.HEIGHT / 2 + rocket.y * self.scale_factor)
+            self.center_map = (self.WIDTH / 2 - rocket.x * self.scale_factor,
+                               self.HEIGHT / 2 + rocket.y * self.scale_factor)
             self.time_scale_to_rocket_counter = 15
 
     def move_screen(self, action, event):
@@ -96,6 +103,7 @@ class Planet:
         :param action: текущее состояние мыши
         :param event: событие мыши
         :return:
+        :return: None
         """
         if action == "down":
             self.start_position = event.pos
@@ -111,7 +119,6 @@ class Planet:
         """
         Изменяет масштаб по времени
         :param keys: массив нажатия клавиатуры
-        :return: None
         """
         if self.time_scale_counter == 0 and keys[self.left]:
             if self.time_scale_index > 0:
@@ -166,24 +173,27 @@ class Planet:
 
 
 class Rocket:
-    def __init__(self, screen, WIDTH, HEIGHT):
-        self.WIDTH = WIDTH
-        self.HEIGHT = HEIGHT
+    def __init__(self, screen, screen_width, screen_height):
+        """
+        Класс ракеты
+        """
+        self.WIDTH = screen_width
+        self.HEIGHT = screen_height
         self.screen = screen
         self.height = 70
         self.radius = 1.5
-        self.moment_of_inertia = 5 * 10 ** 6  # момент инерции относительно центра масс
-        self.nozzle_angle = 0  # угол поворота сопла
+        self.moment_of_inertia = 5 * 10 ** 6
+        self.nozzle_angle = 0
         self.shell_mass = 30_000
         self.max_fuel_mass = 270_000
         self.fuel_mass = self.max_fuel_mass
         self.engine_on = False
         self.mu = 1000
-        self.u = 4000
-        self.angle = 0  # угол с вертикалью, положителен обход против часовой стрелки
+        self.u = 6000
+        self.angle = 0
         self.vx = 0
         self.vy = 0
-        self.omega = 0 # угловая скорость вращения против часовой стрелки
+        self.omega = 0
         self.x = 0
         self.y = 6371_000 + self.height / 2
         self.r = 30
@@ -208,7 +218,10 @@ class Rocket:
         self.y_explosion_point = 0
 
     def draw_fuel_tank(self):
-        """Визуализирует бак прямоугольником в правом нижнем углу"""
+        """
+        Визуализирует бак прямоугольником в правом нижнем углу
+        :return: None
+        """
         height = 200
         width = 40
         color = BLACK
@@ -219,22 +232,39 @@ class Rocket:
         pygame.draw.rect(self.screen, color, (self.WIDTH - width - 10, self.HEIGHT - remainder - 10, width, remainder))
 
     def explosion_start(self, x_point_collision, y_point_collision):
+        """
+        Начинает взрыв ракеты при большой скорости
+        :param x_point_collision: координата по x точки взрыва
+        :param y_point_collision: координата по y точки взрыва
+        :return:
+        """
         if not self.dead:
             self.dead = True
             self.x_explosion_point = x_point_collision
             self.y_explosion_point = y_point_collision
 
     def explosion(self, planet):
+        """
+        Отрисовка врзрыва
+        :param planet: экземпляр класса Planet
+        :return: None
+        """
         if self.dead and self.explosion_animation_count <= self.number_of_explosion_animation - 1:
             if not planet.map_mode:
                 number = int(self.explosion_animation_count)
                 animation_image = pygame.image.load(self.explosion_animation_file + str(number) + ".png", )
                 animation_image = pygame.transform.scale(animation_image, (800, 600))
-                animation_image_rect = animation_image.get_rect(center=(self.WIDTH / 2 + self.x_explosion_point, self.HEIGHT / 2 - self.y_explosion_point))
+                animation_image_rect = animation_image.get_rect(center=(self.WIDTH / 2 + self.x_explosion_point,
+                                                                        self.HEIGHT / 2 - self.y_explosion_point))
                 self.screen.blit(animation_image, animation_image_rect)
             self.explosion_animation_count += 0.5
 
     def draw(self, planet):
+        """
+        Отрисовка ракеты
+        :param planet: экземпляр класса Planet
+        :return: None
+        """
         if not self.dead and planet.map_mode:
             w = planet.center_map[0]
             h = planet.center_map[1]
@@ -242,11 +272,11 @@ class Rocket:
             current_mark_image = pygame.transform.scale(self.image_mark, (
                 15, 20))
             current_mark_image = pygame.transform.rotate(current_mark_image, self.angle * 180 / 3.14)
-            current_mark_rect = current_mark_image.get_rect(center= coordinate_array)
+            current_mark_rect = current_mark_image.get_rect(center=coordinate_array)
             self.screen.blit(current_mark_image, current_mark_rect)
             pygame.draw.line(self.screen, RED, coordinate_array,
-                            [coordinate_array[0] + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
-                             coordinate_array[1] + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
+                             [coordinate_array[0] + 10 * math.sin(self.angle + 500 * self.nozzle_angle),
+                              coordinate_array[1] + 10 * math.cos(self.angle + 500 * self.nozzle_angle)], 2)
         elif not self.dead:
             if self.engine_on and self.fuel_mass > 0:
                 number = int(self.flame_animation_count)
@@ -267,14 +297,22 @@ class Rocket:
             self.screen.blit(current_image, current_image_rect)
 
     def switch_engine(self, keys):
-        """Включает/выключает двигатель при разовом нажатии на W/S"""
+        """
+        Включает/выключает двигатель при разовом нажатии на W/S
+        :param keys: массив с информации с клавиатуры
+        :return: None
+        """
         if keys[self.up_key]:
             self.engine_on = True
         elif keys[self.down_key]:
             self.engine_on = False
 
     def turn(self, keys):
-        """Включает/выключает двигатель при разовом нажатии на W/S"""
+        """
+        Включает/выключает двигатель при разовом нажатии на W/S
+        :param keys: массив с информации с клавиатуры
+        :return: None
+        """
         self.nozzle_angle = 0
         if keys[self.left_key]:
             self.nozzle_angle = - 0.001
@@ -282,7 +320,155 @@ class Rocket:
             self.nozzle_angle = 0.001
 
 
+class Menu:
+    """
+    Класс включаемого меню
+    """
+    def __init__(self, screen, screen_width, screen_height):
+        self.screen = screen
+        self.active = True
+        self.button_width = 100
+        self.button_height = 40
+        self.center = [int(screen_width / 2), int(screen_height / 2)]
+        self.play_button = [[self.center[0] - self.button_width, self.center[1] - 2 * self.button_height],
+                            [self.center[0] + self.button_width, self.center[1] - 2 * self.button_height],
+                            [self.center[0] - self.button_width, self.center[1] - self.button_height],
+                            [self.center[0] + self.button_width, self.center[1] - self.button_height]]
+        self.tutorial_button = [[self.center[0] - self.button_width, self.center[1] - self.button_height],
+                                [self.center[0] + self.button_width, self.center[1] - self.button_height],
+                                [self.center[0] - self.button_width, self.center[1]],
+                                [self.center[0] + self.button_width, self.center[1]]]
+        self.tutorial_button_active = False
+        self.authors_button = [[self.center[0] - self.button_width, self.center[1] - 0],
+                               [self.center[0] + self.button_width, self.center[1] - 0],
+                               [self.center[0] - self.button_width, self.center[1] + self.button_height],
+                               [self.center[0] + self.button_width, self.center[1] + self.button_height]]
+        self.authors_button_active = False
+        self.quit_button = [[self.center[0] - self.button_width, self.center[1] + self.button_height],
+                            [self.center[0] + self.button_width, self.center[1] + self.button_height],
+                            [self.center[0] - self.button_width, self.center[1] + 2 * self.button_height],
+                            [self.center[0] + self.button_width, self.center[1] + 2 * self.button_height]]
+
+    def draw(self):
+        """
+        Выводит изображение игрового меню
+        :return: None
+        """
+        text = pygame.font.Font(None, 45)
+
+        x, y = self.play_button[0]
+        pygame.draw.rect(self.screen, BRIGHT_BLUE, (x, y, 2 * self.button_width, self.button_height + 2), 2)
+        txt = text.render('PLAY', True, BRIGHT_BLUE)
+        self.screen.blit(txt, (x + 61, y + 7))
+
+        x, y = self.tutorial_button[0]
+        pygame.draw.rect(self.screen, BRIGHT_BLUE, (x, y, 2 * self.button_width, self.button_height + 2), 2)
+        txt = text.render('TUTORIAL', True, BRIGHT_BLUE)
+        self.screen.blit(txt, (x + 23, y + 7))
+
+        x, y = self.authors_button[0]
+        pygame.draw.rect(self.screen, BRIGHT_BLUE, (x, y, 2 * self.button_width, self.button_height + 2), 2)
+        txt = text.render('AUTHORS', True, BRIGHT_BLUE)
+        self.screen.blit(txt, (x + 21, y + 7))
+
+        x, y = self.quit_button[0]
+        pygame.draw.rect(self.screen, BRIGHT_BLUE, (x, y, 2 * self.button_width, self.button_height + 2), 2)
+        txt = text.render('QUIT', True, BRIGHT_BLUE)
+        self.screen.blit(txt, (x + 62, y + 7))
+
+        text = pygame.font.Font(None, 150)
+        txt = text.render('FAKT SIMULATION', True, BRIGHT_BLUE)
+        self.screen.blit(txt, (self.center[0] - 500, self.center[1] - 300))
+
+    def play(self, width, height):
+        """
+        Запускает новую игру с самого начала
+        :param width: ширина экрана
+        :param height: высота экрана
+        :return: None
+        """
+        rocket = Rocket(self.screen, width, height)
+        self.active = False
+        return rocket
+
+    def tutorial(self):
+        """
+        Проверяет, открыт ли туториал, и рисует его
+        :return: None
+        """
+        if self.tutorial_button_active:
+            pygame.draw.rect(self.screen, COSMIC, (self.center[0] - 130, self.center[1] - 130, 260, 260))
+            pygame.draw.rect(self.screen, BRIGHT_BLUE, (self.center[0] - 130, self.center[1] - 130, 260, 260), 3)
+            text = pygame.font.Font(None, 24)
+            txt = text.render('Обучение', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 40, self.center[1] - 120))
+            txt = text.render('W/S - включить/выключить', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1] - 100))
+            txt = text.render('двигатель', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1] - 80))
+            txt = text.render('A/D -  повернуть влево/вправо', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1] - 60))
+            txt = text.render('Q - переключить режим карты', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1] - 40))
+            txt = text.render('LEFT/RIGHT - замедлить/', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1] - 20))
+            txt = text.render('ускорить течение времени', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1]))
+            txt = text.render('ESC - выйти в меню', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1] + 20))
+
+            txt = text.render('В режиме карты:', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 80, self.center[1] + 40))
+            txt = text.render('UP/DOWN - изменить масштаб', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1] + 60))
+            txt = text.render('MOUSE - перетаскивать', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1] + 80))
+            txt = text.render('SHIFT - навестись на ракету', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 120, self.center[1] + 100))
+
+    def authors(self):
+        """
+        Проверяет, открыты ли титры, и выводит их
+        :return: None
+        """
+        if self.authors_button_active:
+            pygame.draw.rect(self.screen, COSMIC, (self.center[0] - 130, self.center[1] - 110, 260, 215))
+            pygame.draw.rect(self.screen, BRIGHT_BLUE, (self.center[0] - 130, self.center[1] - 110, 260, 215), 3)
+
+            text = pygame.font.Font(None, 40)
+            txt = text.render('TEAM MEMBERS', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 117, self.center[1] - 100))
+
+            text = pygame.font.Font(None, 30)
+            txt = text.render('teamleader:', True, DIM_BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 60, self.center[1] - 60))
+            text = pygame.font.Font(None, 37)
+            txt = text.render('Kozhanov Ivan', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 90, self.center[1] - 40))
+
+            text = pygame.font.Font(None, 30)
+            txt = text.render('junior developer:', True, DIM_BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 85, self.center[1] - 5))
+            text = pygame.font.Font(None, 37)
+            txt = text.render('Chepurov Yegor', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 100, self.center[1] + 15))
+
+            text = pygame.font.Font(None, 30)
+            txt = text.render('just Tolik:', True, DIM_BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 50, self.center[1] + 50))
+            text = pygame.font.Font(None, 37)
+            txt = text.render('Tolik', True, BRIGHT_BLUE)
+            self.screen.blit(txt, (self.center[0] - 33, self.center[1] + 70))
+
+
 def basis_rotation(x, y, angle):
+    """
+    :param x: координата по Ox
+    :param y: координата по Oy
+    :param angle: угол ворота системы координат
+    :return: новые значения x, y
+    :return: новые значения x, y
+    """
     return x * math.cos(angle) - y * math.sin(angle), x * math.sin(angle) + y * math.cos(angle)
 
 

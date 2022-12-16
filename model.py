@@ -29,7 +29,8 @@ def calculate_gravity(rocket, obj):
 
 
 def calculate_acceleration(rocket, force_x, force_y):
-    """Изменяет x- и y- составляющие скорости ракеты за 1 кадр в соответствии с её полным ускорением
+    """
+    Изменяет x- и y- составляющие скорости ракеты за 1 кадр в соответствии с её полным ускорением
     :param rocket: экземпляр класса Rocket, который изменяем
     :param force_x: сила по Ox
     :param force_y: cила по Oy
@@ -53,7 +54,8 @@ def calculate_thrust_force(rocket):
 
 
 def waste_fuel(rocket):
-    """ Тратит часть топлива каждый кадр, уменьшая fuel mass, выключает двигатель при отсутствии топлива
+    """
+    Тратит часть топлива каждый кадр, уменьшая fuel mass, выключает двигатель при отсутствии топлива
     :param rocket: экземпляр класса Rocket
     :return: None
     """
@@ -64,7 +66,8 @@ def waste_fuel(rocket):
 
 
 def calculate_moment_of_inertia(rocket):
-    """ Считает момент инерции
+    """
+    Считает момент инерции
     :param rocket: экземпляр класса Rocket
     :return: момент инерции
     """
@@ -72,7 +75,8 @@ def calculate_moment_of_inertia(rocket):
 
 
 def calculate_angular_acceleration(rocket):
-    """ Рассчитывает угловое ускорение
+    """
+    Рассчитывает угловое ускорение
     :param rocket: экземпляр класса Rocket
     :return: угловое ускорение
     """
@@ -83,7 +87,8 @@ def calculate_angular_acceleration(rocket):
 
 
 def move(rocket):
-    """ Пересчитывает координаты ракеты
+    """
+    Пересчитывает координаты ракеты
     :param rocket: экземпляр класса Rocket
     :return: None
     """
@@ -94,7 +99,8 @@ def move(rocket):
 
 
 def calculate_physical_time(planet):
-    """ Рассчитывает физическое время
+    """
+    Рассчитывает физическое время
     :param planet: экземпляр класса Planet
     :return: None
     """
@@ -102,7 +108,8 @@ def calculate_physical_time(planet):
 
 
 def calculate_physics(rocket, planet):
-    """ Главный модуль, который просчитывает всю физику
+    """
+    Главный модуль, который просчитывает всю физику
     :param rocket: экземпляр класса Rocket
     :param planet: экземпляр класса Planet
     :return: None
@@ -124,7 +131,8 @@ def calculate_physics(rocket, planet):
 
 
 def air_resistance_force(rocket, planet):
-    """ Рассчитываем силу сопротивления для ракеты
+    """
+    Рассчитываем силу сопротивления для ракеты
     :param rocket: экземпляр класса Rocket
     :param planet: экземпляр класса Planet
     :return: None
@@ -146,37 +154,44 @@ def air_resistance_force(rocket, planet):
 
 
 def calculate_energy(rocket, obj):
-    """ Возвращает энергию в каждый момент времени
-    м
+    """
+    Возвращает энергию в каждый момент времени
     :return: полную энегрию тела
     """
-    distance = ((rocket.x - obj.x) ** 2 + (rocket.y - obj.y) ** 2)
-    potentional_energy = - gravitational_constant * obj.mass / distance
+    distance = ((rocket.x - obj.x) ** 2 + (rocket.y - obj.y) ** 2) ** 0.5
+    potentional_energy = - gravitational_constant * obj.mass * (rocket.shell_mass + rocket.fuel_mass) / distance
     kinetic_energy = (rocket.shell_mass + rocket.fuel_mass) * (rocket.vx ** 2 + rocket.vy ** 2) / 2
     energy = potentional_energy + kinetic_energy
 
     return energy
 
 
-def calculate_ellipse_param(rocket, obj, energy):
+def calculate_ellipse_param(rocket, obj):
     """Просчитывает параметры эллипса и возвращает их"""
-    distance = ((rocket.x - obj.x) ** 2 + (rocket.y - obj.y) ** 2)
-    v_r = (rocket.vx * rocket.x) + (rocket.vy * rocket.y) / distance
-    v_phi = ((rocket.vx ** 2 + rocket.vy ** 2) ** 2 - v_r ** 2) ** 0.5
+    energy = calculate_energy(rocket, obj)
+    distance = ((rocket.x - obj.x) ** 2 + (rocket.y - obj.y) ** 2) ** 0.5
+    v_r = ((rocket.vx * rocket.x) + (rocket.vy * rocket.y)) / distance
+    v_phi = ((rocket.vx ** 2 + rocket.vy ** 2) - v_r ** 2) ** 0.5
     l_0 = v_phi * distance
+    print(energy)
     a = - gravitational_constant * (rocket.shell_mass + rocket.fuel_mass) * obj.mass / energy
     b = l_0 / (-2 * energy / (rocket.shell_mass + rocket.fuel_mass)) ** 0.5
     c = (a ** 2 - b ** 2) ** 0.5
     x_0 = a * (distance - a) / (a ** 2 - b ** 2) ** 0.5
-    phi = math.pi - math.acos((x_0 + c) / distance)
-    psi = math.atan((distance * math.sin(phi)) / x_0)
+    if abs((x_0 + c) / distance) >= 1:
+        phi = math.pi
+    else:
+        phi = math.pi - math.acos(abs((x_0 + c) / distance))
+    if x_0 == 0:
+        psi = 0
+    else:
+        psi = math.atan(abs((distance * math.sin(phi)) / x_0))
     return a, b, psi
 
 
-
-
 def collision(planet, rocket):
-    """ Отслеживает столконовение с планетой
+    """
+    Отслеживает столконовение с планетой
     :param rocket: экземпляр класса Rocket
     :param planet: экземпляр класса Planet
     :return: None
