@@ -31,7 +31,9 @@ def main():
     while not finished:
 
         clock.tick(FPS)
+        # обработка событий pygame
         for event in pygame.event.get():
+            # игра в режиме меню
             if menu.active:
                 screen.fill(COSMIC)
                 menu.draw()
@@ -65,7 +67,7 @@ def main():
                     menu.tutorial_button_active = False
                 menu.tutorial()
                 menu.authors()
-
+            # взаимодействие с мышью в режиме карты
             if event.type == pygame.QUIT:
                 finished = True
             elif event.type == pygame.KEYDOWN:
@@ -79,29 +81,32 @@ def main():
                 planet.move_screen("up", event)
 
         pygame.display.update()
-
-        if (not menu.active):
+        # игра в режиме симуляции полёта
+        if not menu.active:
             rocket.turn(pygame.key.get_pressed())
             rocket.switch_engine(pygame.key.get_pressed())
 
+            # обработка физики
             calculate_physics(rocket, planet)
+            calculate_physical_time(planet)
 
+            # отрисовка элементов игры
             screen.fill(COSMIC)
-            planet.change_mode(pygame.key.get_pressed())
-            planet.change_mode_timer_count()
-
             planet.draw(rocket)
-
             rocket.draw(planet)
             rocket.draw_fuel_tank()
             rocket.explosion(planet)
+            text_score(text, planet, rocket)
+
+            # обработка нажатий клавиш
             planet.time_scale(pygame.key.get_pressed())
+            planet.scale(pygame.key.get_pressed(), rocket)
+            planet.change_mode(pygame.key.get_pressed())
+
+            # таймеры
             planet.time_scale_counter_timer()
             planet.time_scale_to_rocket_counter_timer()
-            planet.scale(pygame.key.get_pressed(), rocket)
-
-            text_score(text, planet, rocket)
-            calculate_physical_time(planet)
+            planet.change_mode_timer_count()
 
     pygame.quit()
 
