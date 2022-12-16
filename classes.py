@@ -261,7 +261,7 @@ class Rocket:
 
 class Menu:
     """
-
+    Класс включаемого меню
     """
     def __init__(self, screen, WIDTH, HEIGHT):
         self.screen = screen
